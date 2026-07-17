@@ -1,7 +1,7 @@
 {
   "name": "transcefrencias",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "packageManager": "pnpm@11.7.0",
   "engines": {
@@ -10,12 +10,17 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint src vite.config.ts",
+    "lint": "eslint src vite.config.ts scripts",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "benchmark:finance": "vitest bench --run src/domain/finance/optimize-transfers.bench.ts",
+    "benchmark:finance:corpus": "node scripts/run-finance-corpus.mjs",
+    "benchmark:finance:corpus:fresh": "node scripts/run-finance-corpus.mjs --fresh",
+    "benchmark:finance:hybrid": "node scripts/run-finance-corpus.mjs --hybrid",
+    "benchmark:finance:hybrid:fresh": "node scripts/run-finance-corpus.mjs --hybrid --fresh"
   },
   "dependencies": {
     "react": "19.2.7",
@@ -36,6 +41,7 @@
     "eslint": "10.7.0",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.3",
+    "fast-check": "4.9.0",
     "globals": "17.7.0",
     "jsdom": "29.1.1",
     "prettier": "3.9.5",

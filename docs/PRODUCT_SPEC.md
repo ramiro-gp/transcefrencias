@@ -141,6 +141,7 @@ Objetivo: cargar el monto habitual sin abrir el teclado del celular.
 - El origen, el destino, el propietario o un coadministrador pueden crearlo. Registrar autor y acción de origen.
 - Admitir pagos parciales.
 - Un movimiento puede conectar cualquier participante deudor pendiente con cualquier participante acreedor pendiente, aunque esa pareja no aparezca en la recomendación actual.
+- El importe de un movimiento es un entero positivo de pesos; no necesita ser múltiplo de $500 porque cuotas y saldos internos pueden contener pesos de remanente.
 - Al crear o editar, el importe no puede superar `min(deuda pendiente total del origen, crédito pendiente total del destino)`.
 - Después de crear, editar o anular, recalcular recomendaciones sobre los balances pendientes.
 - El creador puede editar o anular el movimiento. El propietario y coadministradores pueden editar o anular cualquiera. La contraparte no puede hacerlo si no fue creadora.

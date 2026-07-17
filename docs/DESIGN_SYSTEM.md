@@ -73,7 +73,7 @@ Usar confirmación para eliminar, reabrir o cambiar de etapa. No usar alertas na
 
 ## Versión
 
-Mostrar `v0.1.0` discretamente al final de la navegación o página. Debe ser visible pero no competir con acciones.
+Mostrar `vMAJOR.MINOR.PATCH` discretamente al final de la navegación o página. Debe ser visible pero no competir con acciones.
 
 ## Accesibilidad
 

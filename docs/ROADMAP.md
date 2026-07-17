@@ -26,11 +26,13 @@ Cada etapa debe aprobarse, implementarse, verificarse y documentarse antes de av
 - Tipos de dominio.
 - Reparto exacto de pesos enteros.
 - Balances por subconjunto de participantes.
-- Optimizador exacto con fallback medido.
+- Optimizador exacto híbrido sin fallback productivo para el rango habitual.
 - Suite exhaustiva de tests e invariantes.
 - Demo local de casos, incluido el ejemplo A–F.
 
 No conectar Supabase hasta que este motor sea confiable.
+
+Estado al 2026-07-17: motor exacto híbrido implementado e instrumentado. El rango habitual de 14–15 completó 100 % exacto y no requiere fallback; Web Worker e integración permanecen para etapas posteriores.
 
 ## Etapa 3 — Supabase y autenticación
 

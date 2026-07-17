@@ -29,4 +29,14 @@ export default tseslint.config(
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      ecmaVersion: 2023,
+      globals: globals.node,
+    },
+    rules: {
+      ...tseslint.configs.disableTypeChecked.rules,
+    },
+  },
 )

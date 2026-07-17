@@ -18,6 +18,42 @@ Este archivo registra qué se hizo realmente. No incluir planes como si ya estuv
 
 ## Registros
 
+### 2026-07-17 — Optimizador exacto híbrido
+
+- **Versión:** `0.2.0`.
+- **Objetivo:** garantizar el mínimo matemático en el rango habitual de 14–15 sin depender de millones de estados.
+- **Implementado:** solver separado con sumas precalculadas, bitmasks, DP memoizada, anclaje canónico, reconstrucción lexicográfica, detección directa irreducible, transferencias deterministas y métricas; selección por particiones hasta 15 no nulos y backtracking para tamaños mayores; presupuestos discriminables sin fallback.
+- **Áreas/archivos:** solver y optimizador financiero, referencia greedy extraída, tests, benchmark recuperable, scripts y documentación.
+- **Base de datos:** sin cambios.
+- **Verificaciones:** 1.000/1.000 realistas y 40/40 sintéticos exactos; 876/876 coincidencias con backtracking previamente demostrado; adversarial resuelto en 13 transferencias; escalado protegido hasta 20; `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (44 tests), `pnpm test:coverage`, `pnpm build`, `git diff --check` y `pnpm audit` correctos; cobertura global 87,50 % statements, 78,96 % branches, 87,64 % functions y 89,34 % lines; motor financiero 90,53 %, 80,49 %, 98,57 % y 92,55 %, respectivamente.
+- **Decisiones:** ADR-015.
+- **Pendientes/riesgos:** Web Worker al integrar React; mantener medición protegida para grupos mayores de 15; no existe fallback productivo.
+- **Commit:** pendiente; no se creó commit en esta intervención.
+
+### 2026-07-17 — Segunda medición reproducible del optimizador
+
+- **Versión:** `0.2.0`.
+- **Objetivo:** ampliar el corpus y separar costo determinista, tiempo y memoria antes de aprobar presupuesto o fallback.
+- **Implementado:** runner reanudable por lotes de cinco casos en procesos separados; checkpoints ignorados por Git; 1.000 eventos derivados de 17.176 gastos válidos y 40 sintéticos; agregación por presupuesto y perfil; calidad greedy; escalada adversarial hasta 2 millones; evaluación de backtracking, Web Worker, particiones cero e híbrido exacto.
+- **Áreas/archivos:** `scripts/run-finance-corpus.mjs`, benchmark de corpus, scripts de paquete, `.gitignore` y documentación financiera.
+- **Base de datos:** sin cambios.
+- **Verificaciones:** corpus completo de 1.040 casos sin fallos; `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (35 tests), `pnpm build` y `git diff --check` correctos.
+- **Decisiones:** ADR-013 permanece pendiente de segunda aprobación; no se cambió ningún contrato ni algoritmo productivo.
+- **Pendientes/riesgos:** elegir presupuesto; decidir fallback; medir un posible preanálisis exacto de subconjuntos; medir en celulares reales antes de fijar expectativas de tiempo.
+- **Commit:** pendiente; no se creó commit en esta intervención.
+
+### 2026-07-17 — Primera parte del motor financiero aislado
+
+- **Versión:** `0.2.0`.
+- **Objetivo:** implementar e instrumentar el cálculo financiero puro antes de decidir un fallback productivo.
+- **Implementado:** tipos y errores de dominio; validaciones de enteros seguros; reparto determinista de remanentes; balances originales con explicación por gasto; movimientos históricos agregados y advertencias independientes del orden; validación de altas y reemplazos; optimizador exacto con poda, memoización, métricas y presupuesto discriminable; test A-F; propiedades con `fast-check`; oracle independiente; benchmark reproducible y referencia greedy sin uso productivo.
+- **Áreas/archivos:** `src/domain/finance/`, configuración de cobertura, scripts, dependencias y documentación financiera.
+- **Base de datos:** sin cambios; no se conectó Supabase.
+- **Verificaciones:** `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (35 tests), `pnpm test:coverage`, `pnpm build`, `git diff --check` y `pnpm audit` correctos; oracle coincidente en 500 casos generados; cobertura global 86,46 % statements, 78,1 % branches, 84,5 % functions y 88,19 % lines; cobertura del motor 90,85 %, 80,31 %, 98,07 % y 92,8 %, respectivamente; benchmark ejecutado con casos de 14–15 participantes.
+- **Decisiones:** ADR-011 a ADR-014.
+- **Pendientes/riesgos:** segunda aprobación para presupuesto y fallback; el adversarial de 15 participantes agotó 250.000 estados en aproximadamente 1,3 s; no existe fallback productivo ni límite funcional de participantes.
+- **Commit:** pendiente; no se creó commit en esta intervención.
+
 ### 2026-07-16 — Etapa 0 y base de aplicación
 
 - **Versión:** `0.1.0`.

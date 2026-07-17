@@ -20,6 +20,8 @@ src/
 
 Dentro de cada feature, separar componentes, hooks, esquemas, servicios y tipos cuando sea útil. Evitar una estructura ceremonial con carpetas vacías.
 
+El motor financiero implementado en `src/domain/finance/` no importa React, DOM ni Supabase. Sus módulos separan reparto, balances originales, movimientos, optimización exacta híbrida, solver de particiones cero, backtracking, tipos, errores y validaciones. Los balances son resultados derivados y serializables, no estado persistido.
+
 ## Entidades sugeridas
 
 - `profiles`

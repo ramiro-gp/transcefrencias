@@ -81,3 +81,43 @@ Registrar aquí decisiones que tengan alternativas relevantes o consecuencias fu
 - **Decisión:** Etapa 1 instala solo React, routing y tooling de construcción, estilo, pruebas y PWA. Query y Supabase se agregan en Etapa 3; librerías de formularios y validación, al primer formulario real.
 - **Motivo:** evitar abstracciones, providers y dependencias sin uso real.
 - **Consecuencia:** la estructura inicial no incluye adaptadores de datos, providers remotos ni formularios ficticios.
+
+## ADR-011 — Granularidad monetaria interna y movimientos
+
+- **Estado:** aceptada.
+- **Fecha:** 2026-07-17.
+- **Decisión:** solo los gastos ingresados deben ser múltiplos de $500. Cuotas, balances, movimientos y transferencias sugeridas admiten cualquier entero positivo de pesos.
+- **Motivo:** los remanentes de una división exacta pueden producir cuotas no divisibles por $500 y deben poder saldarse sin perder ni inventar dinero.
+- **Consecuencia:** toda cantidad usa `number` con validación de entero seguro; el motor rechaza volúmenes agregados no representables con seguridad.
+
+## ADR-012 — Aplicación agregada de movimientos históricos
+
+- **Estado:** aceptada.
+- **Fecha:** 2026-07-17.
+- **Decisión:** los movimientos históricos activos se aplican algebraicamente mediante totales enviados y recibidos, con independencia del orden. Las advertencias se derivan del resultado agregado. Un reemplazo se valida excluyendo exactamente el movimiento anterior.
+- **Motivo:** conservar historia auditable y evitar que el orden accidental cambie saldos o advertencias.
+- **Consecuencia:** editar gastos puede invertir saldos y generar una recomendación de devolución sin modificar movimientos retroactivamente.
+
+## ADR-013 — Optimización exacta instrumentada antes del fallback
+
+- **Estado:** reemplazada por ADR-015.
+- **Fecha:** 2026-07-17.
+- **Decisión:** implementar primero búsqueda exacta determinista con poda, memoización, métricas y presupuesto opcional de estados. Agotar el presupuesto devuelve un resultado discriminado y nunca activa una solución aproximada silenciosa.
+- **Motivo:** un timeout rompería determinismo y un fallback no medido podría degradar innecesariamente la optimalidad.
+- **Consecuencia:** sirvió para medir el backtracking y fundamentar ADR-015. No se habilitó fallback.
+
+## ADR-014 — fast-check para invariantes financieras
+
+- **Estado:** aceptada.
+- **Fecha:** 2026-07-17.
+- **Decisión:** incorporar `fast-check` como dependencia de desarrollo para verificar propiedades contables y comparar el optimizador con un oracle independiente en casos pequeños.
+- **Motivo:** generación reproducible y reducción automática de contraejemplos en lógica financiera de alto riesgo.
+- **Consecuencia:** la suite mantiene seeds reproducibles por Vitest/fast-check y complementa ejemplos unitarios, no los reemplaza.
+
+## ADR-015 — Optimizador exacto híbrido por particiones cero
+
+- **Estado:** aceptada.
+- **Fecha:** 2026-07-17.
+- **Decisión:** `optimizeTransfers` usa el solver exacto de particiones para hasta 15 balances no nulos y conserva backtracking exacto para cantidades mayores.
+- **Motivo:** 1.040/1.040 casos habituales completaron exacto, con máximo de 25,12 ms y menos de 0,57 MB estimados para el solver; el adversarial de más de 2 millones de estados se resolvió en 1,01 ms.
+- **Consecuencia:** 15 es un umbral algorítmico, no un límite funcional. No se incorpora fallback para el rango habitual; entradas mayores siguen siendo aceptadas y pueden devolver agotamiento discriminable si se usa presupuesto.
