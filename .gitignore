@@ -1,0 +1,15 @@
+# Dependencies and generated output
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Local tooling
+.vite/
+.DS_Store
+Thumbs.db
