@@ -47,6 +47,16 @@ pnpm build
 
 `pnpm benchmark:finance:hybrid` reproduce o reanuda la medición del optimizador híbrido; `pnpm benchmark:finance:hybrid:fresh` la reinicia. Incluye el corpus completo, el adversarial y escalado controlado de 14 a 20 balances no nulos.
 
+## Flujo de etapas con OpenCode
+
+Los comandos de proyecto aceptan el número o nombre de la etapa y separan planificación, implementación, revisión y cierre:
+
+```text
+/stage-plan 4 -> aprobación -> /stage-build 4 -> revisión humana -> /stage-review 4 -> /stage-close 4
+```
+
+`stage-close` se ejecuta únicamente después de aprobar la revisión humana; realiza las verificaciones finales, actualiza la versión de la entrega, crea un commit y hace push a la rama y upstream ya configurados. Los demás comandos no hacen commit ni push.
+
 ## Supabase local
 
 ```bash
