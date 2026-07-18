@@ -6,6 +6,9 @@
 - El alta no requiere confirmación por email.
 - Debe existir recuperación de contraseña por email.
 - Perfil con nombre obligatorio y apodo opcional.
+- El nombre se recorta en los extremos, admite hasta 100 caracteres y no admite caracteres de control.
+- El apodo se recorta en los extremos, admite hasta 50 caracteres, no es único y un valor vacío se guarda como ausente.
+- La contraseña requiere al menos 8 caracteres.
 - En el evento se muestra el apodo cuando existe; al pulsarlo se revela el nombre real de forma accesible.
 - Un usuario autenticado puede crear eventos y unirse mediante enlace.
 

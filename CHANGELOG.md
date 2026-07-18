@@ -6,6 +6,18 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+### Added
+
+- Supabase CLI local reproducible con Auth email/password, Mailpit, migraciones, generación de tipos y scripts pnpm.
+- Esquema `profiles` creado transaccionalmente desde `auth.users`, con validación de metadata no confiable, timestamps, grants mínimos y RLS de acceso propio.
+- 64 pruebas pgTAP y una integración local mediante Supabase JS para Auth, JWT, PostgREST, constraints y aislamiento de permisos.
+- Cliente Supabase único y tipado, validación de configuración pública y flujo Auth `implicit` explícito para la SPA.
+
+### Security
+
+- Revocados INSERT, DELETE, cambios de identidad/timestamps y ejecución directa de funciones internas para clientes anónimos o autenticados.
+- Verificado que `FORCE RLS` no agrega defensa efectiva con el owner local `postgres` dotado de `BYPASSRLS`; se conserva `ENABLE RLS` con políticas y tests reales.
+
 ## [0.2.0] - 2026-07-17
 
 ### Added

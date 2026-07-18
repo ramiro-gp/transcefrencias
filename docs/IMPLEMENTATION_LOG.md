@@ -18,6 +18,18 @@ Este archivo registra qué se hizo realmente. No incluir planes como si ya estuv
 
 ## Registros
 
+### 2026-07-18 — Infraestructura local y perfiles de Etapa 3
+
+- **Versión:** `Unreleased`; `package.json` permanece en `0.2.0`.
+- **Objetivo:** establecer una base local reproducible y comprobable para Supabase Auth y perfiles sin implementar todavía las pantallas de autenticación.
+- **Implementado:** Supabase CLI fijada; stack Docker local con Auth email/password sin confirmación, registro anónimo desactivado y Mailpit; migración de `public.profiles`; trigger transaccional con metadata no confiable; constraints, timestamps, grants por columna, RLS propia y funciones internas protegidas; cliente Supabase tipado con flujo `implicit`; validación de variables públicas; scripts de ciclo local; tipos generados; pgTAP e integración real por Supabase JS.
+- **Áreas/archivos:** `supabase/`, `src/lib/supabase/`, `scripts/test-supabase-local.mjs`, configuración de entorno y paquete, README y documentación de arquitectura/seguridad.
+- **Base de datos:** migración `20260718160449_create_profiles.sql`; schema `private`; tabla `public.profiles`; policies `profiles_select_own` y `profiles_update_own`; no se creó proyecto remoto ni seed.
+- **Verificaciones:** Docker Desktop 29.6.1 y daemon WSL2 operativos; `pnpm supabase db reset`, 64 tests pgTAP, integración local con Auth/JWT/PostgREST/refresh/RLS y generación de tipos correctos; `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (53 tests), `pnpm test:coverage`, `pnpm build`, `git diff --check` y `pnpm audit` correctos; cobertura global 86,70 % statements, 79,33 % branches, 87,77 % functions y 88,39 % lines.
+- **Decisiones:** ADR-016 a ADR-018.
+- **Pendientes/riesgos:** pantallas, formularios, AuthProvider, guards y recuperación pertenecen a la segunda mitad de Etapa 3; SMTP remoto y proyecto hospedado siguen sin configurar; la visibilidad entre miembros se posterga hasta Etapa 4.
+- **Commit:** pendiente; no se creó commit en esta intervención.
+
 ### 2026-07-17 — Optimizador exacto híbrido
 
 - **Versión:** `0.2.0`.

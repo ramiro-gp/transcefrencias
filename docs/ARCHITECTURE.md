@@ -55,6 +55,16 @@ No usar directamente `user_id` como única referencia en gastos.
 - Para operaciones complejas/auditadas, considerar funciones SQL `security definer` cuidadosamente limitadas y con `search_path` seguro.
 - No almacenar balances como fuente primaria. Derivarlos de gastos y movimientos; si luego se cachean, deben poder reconstruirse.
 
+La infraestructura implementada inicia Supabase local mediante la CLI fijada y Docker. `public.profiles` referencia `auth.users`, no duplica email y se crea mediante un trigger transaccional en el schema no expuesto `private`. La función usa `security definer`, `search_path` vacío, nombres calificados y ejecución revocada; la metadata de Auth se trata solo como entrada de perfil validada.
+
+`profiles` habilita RLS pero no FORCE RLS. El owner efectivo `postgres` tiene `BYPASSRLS`, por lo que FORCE fue probado y no añadió aislamiento para ese owner. Los clientes solo reciben SELECT y UPDATE de `full_name`/`nickname`, sujetos a policies de identidad propia. INSERT, DELETE, identidad y timestamps no son privilegios cliente.
+
+### Flujo Auth de la SPA
+
+El cliente configura el flujo `implicit` de manera explícita. Es adecuado para la SPA sin servidor y permite que un enlace de recuperación se abra fuera del navegador que lo solicitó. PKCE evita entregar tokens directamente en la URL, pero requiere intercambiar un código junto con un verifier almacenado en el dispositivo inicial; por eso puede fallar al abrir el email en otro dispositivo.
+
+Supabase JS procesa el fragmento Auth y persiste la sesión y su refresh token mediante su storage estándar. `autoRefreshToken` renueva access tokens de vida corta y la rotación local permanece habilitada. La aplicación no crea copias de tokens. Si se incorpora SSR o backend, se reevaluará PKCE.
+
 ## RLS mínima a diseñar y probar
 
 - Perfil: cada usuario edita el propio; miembros de un evento pueden ver los datos mínimos de otros miembros de ese evento.
@@ -91,9 +101,7 @@ Agregar tests o verificaciones reproducibles de RLS antes de producción.
 ## Entornos
 
 - `.env.local` ignorado.
-- `.env.example` con:
-  - `VITE_SUPABASE_URL=`
-  - `VITE_SUPABASE_ANON_KEY=`
+- `.env.example` documenta `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` con valores ficticios/locales públicos.
 - Producción configurada en Vercel.
 - No usar secretos del servidor en variables `VITE_*`.
 

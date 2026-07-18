@@ -2,7 +2,7 @@
 
 PWA mobile-first para dividir gastos de una juntada de manera justa: cada gasto se reparte solo entre quienes participaron y el resultado reduce transferencias innecesarias.
 
-La implementación actual incluye la base de la Etapa 1 y el motor financiero aislado completo de la Etapa 2. Reparte gastos, explica balances, aplica movimientos y optimiza transferencias exactamente para el rango habitual. No existe fallback productivo ni se usa greedy como resultado. Todavía no incluye autenticación, Supabase, eventos persistidos ni UI financiera.
+La implementación actual incluye la base de la Etapa 1, el motor financiero aislado completo de la Etapa 2 y la primera mitad de la infraestructura de Etapa 3. Supabase funciona localmente con migraciones, perfiles, RLS, tests SQL e integración real, pero todavía no existen pantallas ni provider de autenticación, eventos persistidos o UI financiera.
 
 ## Stack actual
 
@@ -11,12 +11,15 @@ La implementación actual incluye la base de la Etapa 1 y el motor financiero ai
 - Tailwind CSS 4 para estilos.
 - Vitest, Testing Library y jsdom para pruebas.
 - `vite-plugin-pwa` y Workbox para instalación y actualización explícita.
+- Supabase JS, Supabase CLI y PostgreSQL local para Auth, perfiles y RLS.
+- TanStack Query, React Hook Form y Zod preparados para los flujos de Etapa 3.
 - pnpm como único gestor de paquetes.
 
 ## Requisitos
 
 - Node.js `24.x`
 - pnpm `11.7.0`
+- Docker Desktop o un runtime compatible con Docker API
 
 ## Desarrollo
 
@@ -44,13 +47,28 @@ pnpm build
 
 `pnpm benchmark:finance:hybrid` reproduce o reanuda la medición del optimizador híbrido; `pnpm benchmark:finance:hybrid:fresh` la reinicia. Incluye el corpus completo, el adversarial y escalado controlado de 14 a 20 balances no nulos.
 
+## Supabase local
+
+```bash
+pnpm supabase:start
+pnpm supabase:reset
+pnpm supabase:test:db
+pnpm test:integration:supabase
+pnpm supabase:types
+pnpm supabase:stop
+```
+
+El stack local expone por defecto la API en `http://127.0.0.1:54321`, Studio en `http://127.0.0.1:54323` y Mailpit en `http://127.0.0.1:54324`. `pnpm supabase status -o env` informa las claves públicas locales necesarias para `.env.local`; las claves secretas solo se usan dinámicamente como preparación de la integración local y nunca se incorporan al cliente.
+
+`pnpm supabase:reset` recrea PostgreSQL desde las migraciones versionadas. No hay seed. `pnpm supabase:test:db` ejecuta pgTAP y `pnpm test:integration:supabase` verifica Auth, JWT, PostgREST y RLS contra servicios reales locales.
+
 ## PWA
 
 El service worker precachea el app shell y recursos versionados. No cachea respuestas de datos ni encola escrituras. Cuando detecta una versión nueva, la interfaz ofrece `ACTUALIZAR`; la actualización ocurre únicamente al confirmarla.
 
 ## Entorno
 
-Las variables de Supabase se incorporarán en la Etapa 3. Copiá `.env.example` a un archivo local de entorno cuando corresponda. Nunca incluyas secretos del servidor en variables `VITE_*`.
+El cliente requiere `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`. Ambas son configuración pública del navegador; nunca deben contener una secret key o `service_role`. `.env.example` contiene únicamente valores ficticios o locales no secretos.
 
 ## Documentación
 

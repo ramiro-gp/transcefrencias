@@ -121,3 +121,27 @@ Registrar aquí decisiones que tengan alternativas relevantes o consecuencias fu
 - **Decisión:** `optimizeTransfers` usa el solver exacto de particiones para hasta 15 balances no nulos y conserva backtracking exacto para cantidades mayores.
 - **Motivo:** 1.040/1.040 casos habituales completaron exacto, con máximo de 25,12 ms y menos de 0,57 MB estimados para el solver; el adversarial de más de 2 millones de estados se resolvió en 1,01 ms.
 - **Consecuencia:** 15 es un umbral algorítmico, no un límite funcional. No se incorpora fallback para el rango habitual; entradas mayores siguen siendo aceptadas y pueden devolver agotamiento discriminable si se usa presupuesto.
+
+## ADR-016 — Perfil transaccional mediante trigger de Auth
+
+- **Estado:** aceptada.
+- **Fecha:** 2026-07-18.
+- **Decisión:** un trigger `security definer` sobre `auth.users` crea `public.profiles` dentro de la transacción del alta. Nombre y apodo llegan como metadata no confiable, se validan y normalizan, y nunca participan de autorización.
+- **Motivo:** evitar usuarios Auth huérfanos que podrían aparecer si el cliente ejecutara dos escrituras independientes.
+- **Consecuencia:** un perfil inválido bloquea y revierte el alta completa. No existe INSERT cliente, RPC de reparación, email duplicado, avatar, rol ni historial detallado del perfil en esta etapa.
+
+## ADR-017 — Flujo Auth implicit para la SPA
+
+- **Estado:** aceptada.
+- **Fecha:** 2026-07-18.
+- **Decisión:** el cliente configura explícitamente `flowType: 'implicit'`, `persistSession: true`, `autoRefreshToken: true` y `detectSessionInUrl: true`.
+- **Motivo:** la aplicación es una SPA puramente cliente. A diferencia de PKCE, la recuperación implicit no depende de un code verifier guardado en el dispositivo que solicitó el email y puede abrirse en otra pestaña o dispositivo.
+- **Consecuencia:** el callback recibe tokens en el fragmento URL, que no se envía al servidor pero sí debe ser procesado y limpiado por Supabase JS. El refresh posterior usa refresh-token rotation en ambos flujos. PKCE deberá reevaluarse si aparece SSR o un backend capaz de completar el intercambio; con PKCE, abrir el enlace fuera del navegador que conserva el verifier puede fallar.
+
+## ADR-018 — ENABLE RLS sin FORCE para profiles
+
+- **Estado:** aceptada.
+- **Fecha:** 2026-07-18.
+- **Decisión:** `public.profiles` usa `ENABLE ROW LEVEL SECURITY` y no `FORCE ROW LEVEL SECURITY`.
+- **Motivo:** la tabla y la función de alta pertenecen al rol local `postgres`, que posee `BYPASSRLS`. Una prueba temporal con FORCE confirmó que el trigger funciona, los clientes siguen aislados y el owner continúa omitiendo policies; FORCE no agrega defensa efectiva en este entorno.
+- **Consecuencia:** la seguridad cliente depende de grants mínimos y policies probadas con `anon` y JWT autenticados. Los roles administrativos permanecen fuera del frontend y la suite comprueba que FORCE continúa desactivado para evitar seguridad aparente.

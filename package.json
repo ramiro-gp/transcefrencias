@@ -16,6 +16,12 @@
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:integration:supabase": "node scripts/test-supabase-local.mjs",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:reset": "supabase db reset",
+    "supabase:test:db": "supabase test db",
+    "supabase:types": "supabase gen types typescript --local > src/lib/supabase/database.types.ts && prettier src/lib/supabase/database.types.ts --write",
     "benchmark:finance": "vitest bench --run src/domain/finance/optimize-transfers.bench.ts",
     "benchmark:finance:corpus": "node scripts/run-finance-corpus.mjs",
     "benchmark:finance:corpus:fresh": "node scripts/run-finance-corpus.mjs --fresh",
@@ -23,10 +29,15 @@
     "benchmark:finance:hybrid:fresh": "node scripts/run-finance-corpus.mjs --hybrid --fresh"
   },
   "dependencies": {
+    "@hookform/resolvers": "5.4.0",
+    "@supabase/supabase-js": "2.110.7",
+    "@tanstack/react-query": "5.101.2",
     "react": "19.2.7",
     "react-dom": "19.2.7",
+    "react-hook-form": "7.81.0",
     "react-router": "7.18.1",
-    "workbox-window": "7.4.1"
+    "workbox-window": "7.4.1",
+    "zod": "4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
@@ -45,6 +56,7 @@
     "globals": "17.7.0",
     "jsdom": "29.1.1",
     "prettier": "3.9.5",
+    "supabase": "2.109.1",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
     "typescript-eslint": "8.64.0",
