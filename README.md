@@ -2,7 +2,7 @@
 
 PWA mobile-first para dividir gastos de una juntada de manera justa: cada gasto se reparte solo entre quienes participaron y el resultado reduce transferencias innecesarias.
 
-La implementación actual incluye la base de la Etapa 1, el motor financiero aislado completo de la Etapa 2 y la primera mitad de la infraestructura de Etapa 3. Supabase funciona localmente con migraciones, perfiles, RLS, tests SQL e integración real, pero todavía no existen pantallas ni provider de autenticación, eventos persistidos o UI financiera.
+La implementación actual incluye la base de la Etapa 1, el motor financiero aislado completo de la Etapa 2 y la Etapa 3 completada sobre Supabase local: registro sin confirmación de email, login/logout, recuperación, perfil propio, guards, RLS y pruebas reales con Mailpit. Todavía no existen eventos persistidos ni UI financiera; Supabase remoto, SMTP remoto y Vercel permanecen sin configurar.
 
 ## Stack actual
 
@@ -12,7 +12,7 @@ La implementación actual incluye la base de la Etapa 1, el motor financiero ais
 - Vitest, Testing Library y jsdom para pruebas.
 - `vite-plugin-pwa` y Workbox para instalación y actualización explícita.
 - Supabase JS, Supabase CLI y PostgreSQL local para Auth, perfiles y RLS.
-- TanStack Query, React Hook Form y Zod preparados para los flujos de Etapa 3.
+- TanStack Query, React Hook Form y Zod en uso para sesión, perfil y formularios Auth.
 - pnpm como único gestor de paquetes.
 
 ## Requisitos
@@ -61,6 +61,8 @@ pnpm supabase:stop
 El stack local expone por defecto la API en `http://127.0.0.1:54321`, Studio en `http://127.0.0.1:54323` y Mailpit en `http://127.0.0.1:54324`. `pnpm supabase status -o env` informa las claves públicas locales necesarias para `.env.local`; las claves secretas solo se usan dinámicamente como preparación de la integración local y nunca se incorporan al cliente.
 
 `pnpm supabase:reset` recrea PostgreSQL desde las migraciones versionadas. No hay seed. `pnpm supabase:test:db` ejecuta pgTAP y `pnpm test:integration:supabase` verifica Auth, JWT, PostgREST y RLS contra servicios reales locales.
+
+Para probar la interfaz local, iniciá Supabase, copiá los valores públicos mostrados por `pnpm supabase status -o env` a `.env.local` y ejecutá `pnpm dev`. El flujo de recuperación se inspecciona en Mailpit, sin SMTP remoto.
 
 ## PWA
 

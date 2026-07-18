@@ -40,4 +40,13 @@ describe('validateSupabaseConfig', () => {
       ).toThrow('La clave publica de Supabase no esta configurada.')
     },
   )
+
+  it('rejects missing runtime variables with an actionable message', () => {
+    expect(() =>
+      validateSupabaseConfig({
+        VITE_SUPABASE_URL: undefined,
+        VITE_SUPABASE_ANON_KEY: undefined,
+      } as unknown as ImportMetaEnv),
+    ).toThrow('La URL publica de Supabase no esta configurada correctamente.')
+  })
 })

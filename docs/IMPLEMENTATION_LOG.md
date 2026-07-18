@@ -18,6 +18,19 @@ Este archivo registra qué se hizo realmente. No incluir planes como si ya estuv
 
 ## Registros
 
+### 2026-07-18 — Flujos de autenticación y perfil de Etapa 3
+
+- **Versión:** `Unreleased`; `package.json` permanece en `0.2.0`.
+- **Objetivo:** completar los flujos cliente de Auth y perfil sobre la infraestructura local ya validada.
+- **Implementado:** `QueryClient` efímero con retry acotado; `AuthProvider` con eventos Auth, limpieza de caché por cambio/logout, sesión local y recovery restringido; guards y retorno interno seguro; registro, login, logout, solicitud/confirmación de recuperación, cambio de contraseña, inicio privado y perfil propio; schemas Zod/RHF; servicios estrechos de Auth/Profile; componente accesible de apodo/nombre; feedback y estilos mobile-first.
+- **Ajustes UX posteriores:** corregida la carrera entre cierre de sesión temporal y guard de recovery mediante éxito efímero de navegación; header compacto con acceso por sesión; indicador de conectividad solo offline; acciones de contenido alineadas con la jerarquía principal/secundaria. Los enlaces secundarios de Login, Registro, Recuperación y Perfil forman bloques alineados a la derecha. El estado local de cierre se restablece al completar o fallar `signOut`, evitando que `SALIENDO...` persista en un login posterior sin recarga.
+- **Áreas/archivos:** `src/app/`, `src/features/auth/`, `src/features/profile/`, `src/pages/`, layout, estilos, tests y script de integración local.
+- **Base de datos:** sin migraciones nuevas ni cambios a la RLS aprobada. El script local amplía la prueba real con Mailpit, verificación GoTrue, redirect implicit, cambio de contraseña y login posterior.
+- **Verificaciones:** `pnpm format:check`, `pnpm lint` sin warnings, `pnpm typecheck`, `pnpm test` (90 tests), `pnpm test:coverage`, `pnpm build`, `pnpm supabase db reset`, pgTAP (64 tests), integración local completa con Mailpit, generación de tipos, `git diff --check` y `pnpm audit` correctos. Cobertura global: 75,87 % statements, 65,84 % branches, 67,74 % functions y 75,87 % lines. El chunk inicial actual es 581,14 kB sin comprimir, menor que los 642,23 kB previos a la carga diferida.
+- **Decisiones:** se preserva ADR-016 a ADR-018; no se incorpora `sessionStorage` como autorización de recovery.
+- **Pendientes/riesgos:** Supabase remoto, SMTP remoto y Vercel no están configurados; no hay eventos, invitaciones ni visibilidad entre miembros. Vite informa un chunk inicial por encima de 500 kB; queda como optimización futura y no bloquea este cierre.
+- **Commit:** pendiente; no se creó commit en esta intervención.
+
 ### 2026-07-18 — Infraestructura local y perfiles de Etapa 3
 
 - **Versión:** `Unreleased`; `package.json` permanece en `0.2.0`.

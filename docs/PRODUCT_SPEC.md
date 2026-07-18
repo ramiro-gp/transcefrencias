@@ -14,6 +14,8 @@
 
 > Configuración operativa: desactivar `Confirm email` para el registro en Supabase. La recuperación de contraseña sí depende del envío de email y debe probarse en el entorno configurado.
 
+El login conserva solamente destinos internos válidos. Las rutas de autenticación, URLs absolutas, protocolos y rutas inválidas no se usan como destino de retorno. El cierre de sesión afecta solo la sesión local actual.
+
 ## 2. Eventos
 
 Datos mínimos:

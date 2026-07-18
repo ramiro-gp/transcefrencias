@@ -38,6 +38,35 @@ function createPublicClient(url, publicKey) {
   })
 }
 
+async function findRecoveryLink(email) {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const messagesResponse = await fetch(
+      'http://127.0.0.1:54324/api/v1/messages?limit=100',
+    )
+    const messages = await messagesResponse.json()
+    const message = messages.messages.find((candidate) =>
+      candidate.To.some((recipient) => recipient.Address === email),
+    )
+
+    if (message) {
+      const messageResponse = await fetch(
+        `http://127.0.0.1:54324/api/v1/message/${encodeURIComponent(message.ID)}`,
+      )
+      const body = await messageResponse.json()
+      const content = `${body.Text ?? ''}\n${body.HTML ?? ''}`.replaceAll('&amp;', '&')
+      const link = content.match(/https?:\/\/[^\s"'<>]+/u)?.[0]
+
+      if (link) {
+        return link
+      }
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 250))
+  }
+
+  throw new Error('Mailpit did not receive a password recovery link.')
+}
+
 const { url, publicKey, secretKey } = readLocalSupabaseEnvironment()
 const admin = createClient(url, secretKey, {
   auth: {
@@ -90,6 +119,15 @@ try {
     profileA.user.id,
     'JWT session belongs to user A',
   )
+
+  const signedOut = await profileA.client.auth.signOut({ scope: 'local' })
+  assert.equal(signedOut.error, null)
+  const loggedIn = await profileA.client.auth.signInWithPassword({
+    email: profileA.email,
+    password,
+  })
+  assert.equal(loggedIn.error, null)
+  assert.equal(loggedIn.data.user?.id, profileA.user.id)
 
   const ownA = await profileA.client.from('profiles').select('*').single()
   assert.equal(ownA.error, null)
@@ -184,6 +222,57 @@ try {
   const refreshed = await profileA.client.auth.refreshSession()
   assert.equal(refreshed.error, null)
   assert.equal(refreshed.data.user?.id, profileA.user.id)
+
+  const resetRequest = await profileA.client.auth.resetPasswordForEmail(profileA.email, {
+    redirectTo: 'http://localhost:5173/nueva-contrasena',
+  })
+  assert.equal(resetRequest.error, null)
+
+  const recoveryLink = await findRecoveryLink(profileA.email)
+  const verificationResponse = await fetch(recoveryLink, { redirect: 'manual' })
+  assert.ok(
+    verificationResponse.status >= 300 && verificationResponse.status < 400,
+    'opening the recovery email link must redirect to the application',
+  )
+  const applicationLocation = verificationResponse.headers.get('location')
+  assert.ok(
+    applicationLocation,
+    'recovery verification must provide an application redirect',
+  )
+  const recoveryUrl = new URL(applicationLocation)
+  assert.equal(recoveryUrl.pathname, '/nueva-contrasena')
+  const recoveryParams = new URLSearchParams(recoveryUrl.hash.slice(1))
+  const accessToken = recoveryParams.get('access_token')
+  const refreshToken = recoveryParams.get('refresh_token')
+  assert.ok(
+    accessToken,
+    'recovery link must provide an access token for the implicit flow',
+  )
+  assert.ok(
+    refreshToken,
+    'recovery link must provide a refresh token for the implicit flow',
+  )
+
+  const recoveryClient = createPublicClient(url, publicKey)
+  const recoveredSession = await recoveryClient.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  })
+  assert.equal(recoveredSession.error, null)
+  const updatedPassword = 'Updated-integration-2026!'
+  const passwordUpdate = await recoveryClient.auth.updateUser({
+    password: updatedPassword,
+  })
+  assert.equal(passwordUpdate.error, null)
+  const recoverySignOut = await recoveryClient.auth.signOut({ scope: 'local' })
+  assert.equal(recoverySignOut.error, null)
+
+  const newPasswordLogin = await profileA.client.auth.signInWithPassword({
+    email: profileA.email,
+    password: updatedPassword,
+  })
+  assert.equal(newPasswordLogin.error, null)
+  assert.equal(newPasswordLogin.data.user?.id, profileA.user.id)
 
   console.log('Supabase local integration: PASS')
 } finally {

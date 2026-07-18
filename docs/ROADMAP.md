@@ -44,6 +44,8 @@ Estado al 2026-07-17: motor exacto híbrido implementado e instrumentado. El ran
 - Login, logout y recuperación de contraseña.
 - Perfil con nombre y apodo.
 
+Estado al 2026-07-18: completada en `0.3.0` y probada localmente con Docker, Mailpit, pgTAP, integración Supabase JS y formularios cliente. Incluye perfiles con RLS, registro sin confirmación de email, login/logout, recuperación, guards, Query Cache acotada y navegación mobile-first. Supabase remoto, SMTP remoto y Vercel permanecen pendientes y no forman parte de esta etapa.
+
 ## Etapa 4 — Eventos y participantes
 
 - Crear/listar/abrir eventos.
@@ -86,3 +88,4 @@ Estado al 2026-07-17: motor exacto híbrido implementado e instrumentado. El ran
 - Pruebas con un evento representativo de 14 personas.
 - Configuración Vercel y despliegue autorizado.
 - Preparación de `1.0.0` solo cuando el producto sea estable.
+- Revisar el chunk inicial que Vite informa por encima de 500 kB como optimización futura; no bloquea la Etapa 3.

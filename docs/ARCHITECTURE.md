@@ -65,6 +65,12 @@ El cliente configura el flujo `implicit` de manera explícita. Es adecuado para 
 
 Supabase JS procesa el fragmento Auth y persiste la sesión y su refresh token mediante su storage estándar. `autoRefreshToken` renueva access tokens de vida corta y la rotación local permanece habilitada. La aplicación no crea copias de tokens. Si se incorpora SSR o backend, se reevaluará PKCE.
 
+`AuthProvider` representa únicamente `loading`, `anonymous`, `authenticated` y `recovery`. Escucha `INITIAL_SESSION`, inicio/cierre de sesión, refresh, actualización de usuario y recuperación; no ejecuta llamadas Auth desde ese callback. TanStack Query gestiona el perfil propio, no la sesión, no se persiste y se limpia al cambiar de cuenta o cerrar sesión. Recovery requiere el evento Auth de recuperación y sesión válida; una sesión ordinaria no accede a la ruta de cambio de contraseña.
+
+Al completar recovery, el provider actualiza la contraseña y cierra la sesión temporal como una sola operación de interfaz. El guard deriva al login mediante state de navegación efímero, que Login consume y limpia de su historial; así no confunde éxito con un enlace inválido ni conserva el aviso en recargas futuras.
+
+Las páginas de Auth, perfil, inicio y 404 se resuelven con `route.lazy`; el shell, providers y bootstrap de sesión permanecen en el chunk inicial. `RouterProvider` está cubierto por un fallback accesible de carga para evitar pantallas vacías durante la importación.
+
 ## RLS mínima a diseñar y probar
 
 - Perfil: cada usuario edita el propio; miembros de un evento pueden ver los datos mínimos de otros miembros de ese evento.
@@ -102,7 +108,7 @@ Agregar tests o verificaciones reproducibles de RLS antes de producción.
 
 - `.env.local` ignorado.
 - `.env.example` documenta `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` con valores ficticios/locales públicos.
-- Producción configurada en Vercel.
+- Producción en Vercel pendiente de configuración autorizada.
 - No usar secretos del servidor en variables `VITE_*`.
 
 ## Invitaciones

@@ -25,7 +25,8 @@ body {
 }
 
 button,
-a {
+a,
+input {
   font: inherit;
 }
 
@@ -34,7 +35,8 @@ a {
 }
 
 button:focus-visible,
-a:focus-visible {
+a:focus-visible,
+input:focus-visible {
   outline: 2px solid #a3e635;
   outline-offset: 3px;
 }
@@ -94,12 +96,49 @@ a:focus-visible {
   content: '● ';
 }
 
-.is-online {
-  color: #a3e635;
-}
-
 .is-offline {
   color: #fbbf24;
+}
+
+.header-actions,
+.session-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.session-navigation {
+  position: relative;
+}
+
+.session-navigation a,
+.session-navigation button {
+  min-height: 2.25rem;
+  padding: 0.5rem;
+  border: 1px solid #52525b;
+  border-radius: 0;
+  background: transparent;
+  color: #d4d4d8;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+
+.session-navigation-error {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 2;
+  width: min(16rem, 70vw);
+  margin: 0;
+  padding: 0.5rem;
+  border: 1px solid #fbbf24;
+  background: #09090b;
+  color: #fbbf24;
+  font-size: 0.6875rem;
+  line-height: 1.4;
 }
 
 .app-main {
@@ -236,6 +275,116 @@ h1 {
   width: 100%;
 }
 
+.form-page,
+.page-state {
+  width: min(100%, 34rem);
+  margin: auto 0;
+  padding-bottom: 3rem;
+}
+
+.form-page h1,
+.page-state p:not(.eyebrow) {
+  max-width: 100%;
+}
+
+.form-stack {
+  display: grid;
+  gap: 1.25rem;
+  width: 100%;
+  margin-top: 2rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.field label {
+  color: #f4f4f5;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.field input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.75rem;
+  border: 1px solid #71717a;
+  border-radius: 0;
+  background: #09090b;
+  color: #f8fafc;
+  font-size: 1rem;
+}
+
+.field input:disabled,
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.field-error,
+.form-feedback {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.field-error {
+  color: #fbbf24;
+}
+
+.form-feedback {
+  padding: 0.75rem;
+  border: 1px solid #71717a;
+  color: #f4f4f5;
+}
+
+.button-wide {
+  justify-content: center;
+  width: 100%;
+}
+
+.form-links,
+.private-actions {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.form-links {
+  justify-items: end;
+}
+
+.form-links a {
+  color: #a3e635;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.page-state {
+  display: grid;
+  align-content: center;
+  gap: 1rem;
+}
+
+.page-state .button {
+  width: fit-content;
+}
+
+.profile-nickname {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid #a3e635;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
 @media (min-width: 48rem) {
   .app-header {
     padding: 0;
@@ -249,6 +398,11 @@ h1 {
   .app-footer {
     padding-right: 0;
     padding-left: 0;
+  }
+
+  .form-page .button-wide {
+    width: fit-content;
+    min-width: 12rem;
   }
 
   .update-prompt {

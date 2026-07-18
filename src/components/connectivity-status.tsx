@@ -20,9 +20,13 @@ export function ConnectivityStatus() {
     }
   }, [])
 
+  if (isOnline) {
+    return null
+  }
+
   return (
-    <p className={`connection-status ${isOnline ? 'is-online' : 'is-offline'}`}>
-      {isOnline ? 'CONEXIÓN ACTIVA' : 'SIN CONEXIÓN'}
+    <p className="connection-status is-offline" role="status" aria-live="polite">
+      SIN CONEXIÓN
     </p>
   )
 }

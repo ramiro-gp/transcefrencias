@@ -11,8 +11,12 @@ const PLACEHOLDER_VALUES = new Set([
 export function validateSupabaseConfig(
   env: Pick<ImportMetaEnv, 'VITE_SUPABASE_URL' | 'VITE_SUPABASE_ANON_KEY'>,
 ): SupabasePublicConfig {
-  const rawUrl = env.VITE_SUPABASE_URL.trim()
-  const anonKey = env.VITE_SUPABASE_ANON_KEY.trim()
+  const rawUrl =
+    typeof env.VITE_SUPABASE_URL === 'string' ? env.VITE_SUPABASE_URL.trim() : ''
+  const anonKey =
+    typeof env.VITE_SUPABASE_ANON_KEY === 'string'
+      ? env.VITE_SUPABASE_ANON_KEY.trim()
+      : ''
 
   let url: URL
 

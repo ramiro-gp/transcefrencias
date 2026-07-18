@@ -6,12 +6,24 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-18
+
 ### Added
 
 - Supabase CLI local reproducible con Auth email/password, Mailpit, migraciones, generación de tipos y scripts pnpm.
 - Esquema `profiles` creado transaccionalmente desde `auth.users`, con validación de metadata no confiable, timestamps, grants mínimos y RLS de acceso propio.
 - 64 pruebas pgTAP y una integración local mediante Supabase JS para Auth, JWT, PostgREST, constraints y aislamiento de permisos.
 - Cliente Supabase único y tipado, validación de configuración pública y flujo Auth `implicit` explícito para la SPA.
+- Providers de sesión y TanStack Query, rutas protegidas y destinos de retorno internos seguros.
+- Registro, login, logout local, recuperación de contraseña por Mailpit, nueva contraseña, inicio privado y edición del perfil propio.
+- Formularios accesibles con React Hook Form y Zod, feedback de carga/error/éxito y revelado accesible del nombre real desde un apodo.
+- Carga diferida de pantallas de autenticación, perfil, inicio y 404 para reducir el bundle inicial.
+- Corregida la transición posterior a recuperación de contraseña y reorganizada la navegación de sesión en el header.
+
+### Fixed
+
+- El cierre de sesión pendiente ya no persiste al volver a iniciar sesión sin recargar la aplicación.
+- Los enlaces secundarios de Auth y Perfil se alinean de forma consistente a la derecha.
 
 ### Security
 
