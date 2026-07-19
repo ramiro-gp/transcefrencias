@@ -75,8 +75,8 @@ Las páginas de Auth, perfil, inicio y 404 se resuelven con `route.lazy`; el she
 
 - Perfil: cada usuario edita el propio; miembros de un evento pueden ver los datos mínimos de otros miembros de ese evento.
 - Evento: visible para miembros; el enlace válido solo expone lo mínimo necesario para la pantalla de unión.
-- Membresías: un usuario puede crear su unión válida; solo admins gestionan roles ajenos.
-- Participantes manuales: miembros crean; admins desactivan/vinculan.
+- Membresías: un usuario puede crear su unión válida; solo el propietario gestiona roles ajenos. Las inactivas se reservan para la administración y no se exponen a miembros comunes.
+- Participantes manuales: miembros crean; propietarios/coadministradores desactivan/vinculan.
 - Gastos: miembros crean; autor edita/elimina el propio durante carga; admins gestionan todos.
 - Movimientos: origen, destino y administradores pueden informar; el creador o administradores editan/anulan; miembros del evento consultan el estado necesario.
 - Auditoría: insertada de forma controlada y no editable por usuarios comunes.
@@ -113,7 +113,6 @@ Agregar tests o verificaciones reproducibles de RLS antes de producción.
 
 ## Invitaciones
 
-- Mantener tokens de invitación en una tabla o esquema no expuesto por PostgREST.
-- Generar secretos aleatorios de al menos 256 bits y guardar solo un hash para su comparación.
-- Validar y unir mediante una función SQL controlada; las tablas de secretos no tendrán políticas de consulta directa del cliente.
-- El fragmento de URL puede transportar el secreto para evitar que llegue al servidor o a encabezados `Referer`; eliminarlo de la URL inmediatamente y conservarlo, si hiciera falta tras login, solo en `sessionStorage`.
+- Mantener el identificador aleatorio de invitación en una tabla privada no expuesta por PostgREST. El owner interno lo recupera exclusivamente mediante una RPC autorizada para copiar el enlace estable.
+- Validar y unir mediante una función SQL controlada; miembros, exmiembros, ajenos y anónimos no pueden consultar el enlace desde tablas ni RPC.
+- El fragmento de URL transporta el identificador y se elimina inmediatamente; si hace falta tras login, se conserva temporalmente solo en `sessionStorage`.

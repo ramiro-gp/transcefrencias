@@ -70,8 +70,8 @@ select ok(
 select policies_are(
   'public',
   'profiles',
-  array['profiles_select_own', 'profiles_update_own'],
-  'profiles exposes only the own-select and own-update policies'
+  array['profiles_select_own_or_coparticipant', 'profiles_update_own'],
+  'profiles exposes the own-or-coparticipant select and own-update policies'
 );
 select results_eq(
   $$

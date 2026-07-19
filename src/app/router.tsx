@@ -40,6 +40,13 @@ export const router = createBrowserRouter([
           ),
       },
       {
+        path: 'invitacion/:invitationId',
+        lazy: () =>
+          import('../pages/invitation-page').then(({ InvitationPage: Component }) => ({
+            Component,
+          })),
+      },
+      {
         Component: RecoveryRoute,
         children: [
           {
@@ -67,6 +74,13 @@ export const router = createBrowserRouter([
             path: 'perfil',
             lazy: () =>
               import('../pages/profile-page').then(({ ProfilePage: Component }) => ({
+                Component,
+              })),
+          },
+          {
+            path: 'eventos/:eventId',
+            lazy: () =>
+              import('../pages/event-page').then(({ EventPage: Component }) => ({
                 Component,
               })),
           },

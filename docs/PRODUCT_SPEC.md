@@ -33,7 +33,7 @@ Estados visibles:
 3. `Saldado`.
 4. `Archivado`.
 
-El creador es el propietario permanente durante el MVP. Solo él puede nombrar y remover coadministradores, regenerar o revocar la invitación. Transferir la propiedad queda fuera del MVP.
+El creador es el propietario permanente durante el MVP. Solo él puede nombrar y remover coadministradores y consultar/copiar el enlace estable de invitación. Transferir la propiedad queda fuera del MVP.
 
 ### Unión mediante enlace
 
@@ -56,7 +56,9 @@ El creador es el propietario permanente durante el MVP. Solo él puede nombrar y
 - Reabrir el evento para corregir gastos.
 - Marcarlo como saldado o archivarlo.
 
-El propietario puede además nombrar o remover coadministradores, regenerar o revocar la invitación. Un coadministrador no puede modificar al propietario ni gestionar roles.
+El propietario puede además nombrar o remover coadministradores y consultar/copiar la invitación. Un coadministrador no puede modificar al propietario ni gestionar roles.
+
+El propietario y coadministrador pueden expulsar a un miembro o coadministrador activo, nunca al propietario ni a sí mismos. La expulsión desactiva la membresía y su persona, conserva la historia y bloquea el reingreso hasta que el propietario lo permita. Permitir el reingreso no une automáticamente: la cuenta debe volver a abrir la invitación y pulsar `UNIRME`, recuperando su persona como miembro.
 
 ### Miembro
 
@@ -67,16 +69,16 @@ El propietario puede además nombrar o remover coadministradores, regenerar o re
 - Informar pagos o cobros opcionalmente.
 - Salir del evento.
 
-Durante `Hora de pagar`, los miembros comunes no modifican gastos. Un administrador debe reabrir el evento y aceptar la advertencia de recálculo.
+Durante `Hora de pagar`, los miembros comunes no modifican gastos. Un propietario o coadministrador debe reabrir el evento y aceptar la advertencia de recálculo.
 
 ## 4. Participantes manuales
 
 - Representan personas sin cuenta o sin acceso a la aplicación.
 - Todos los miembros pueden crearlos.
-- Solo administradores/coadministradores pueden desactivarlos.
+- Solo propietarios/coadministradores pueden desactivarlos.
 - Pueden pagar, consumir, deber y recibir igual que una cuenta.
 - Si tienen historial, nunca se eliminan físicamente.
-- Un administrador puede vincularlos posteriormente con una cuenta real.
+- Un propietario o coadministrador puede vincularlos posteriormente con una cuenta real que ya sea miembro activo del evento.
 - La vinculación conserva gastos, saldos y movimientos y debe quedar auditada.
 - No permitir que un usuario reclame unilateralmente una identidad manual.
 - Una cuenta no puede tener dos participantes activos en el mismo evento. Si la cuenta ya tiene uno, una fusión administrativa atómica conserva como activo al asociado con la cuenta, desactiva el manual, preserva las referencias económicas sin duplicarlas y registra la fusión.
@@ -166,7 +168,7 @@ Registrar acciones relevantes:
 - cambios de roles y estados;
 - pagos o cobros informados, editados o anulados.
 
-Mostrar autor, fecha y resumen comprensible. No guardar secretos ni datos innecesarios en el historial.
+Mostrar actor, fecha y resumen comprensible. El actor conserva un snapshot de apodo o nombre al realizar la acción, aun si luego cambia su perfil o sale; no guardar email ni datos innecesarios.
 
 ## 10. PWA y actualización
 
@@ -187,9 +189,10 @@ Mostrar autor, fecha y resumen comprensible. No guardar secretos ni datos innece
 
 ## 12. Invitaciones y privacidad
 
-- Un evento tiene un enlace de invitación activo, reutilizable y no predecible que no expira automáticamente.
-- Solo el propietario puede regenerarlo o revocarlo. Regenerarlo invalida inmediatamente el anterior.
+- Un evento tiene un único enlace de invitación estable, reutilizable, no predecible y sin vencimiento automático.
+- Solo el propietario puede consultarlo o copiarlo desde cualquier sesión. El enlace no se muestra a miembros, exmiembros, usuarios ajenos ni anónimos.
 - Abrir un enlace requiere autenticación; luego se vuelve al evento y se debe pulsar `UNIRME`.
+- Quien posea el enlace puede solicitar unirse, pero siempre necesita una cuenta, sesión y la acción explícita `UNIRME`.
 - No enviar invitaciones por email.
 - Miembros de un mismo evento pueden consultar apodo, nombre al pulsar el apodo, un eventual avatar e información económica correspondiente al evento.
 - Nunca mostrar el email de otra persona. Usuarios ajenos al evento no pueden consultar esos perfiles desde la aplicación ni Supabase.

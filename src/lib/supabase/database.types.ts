@@ -29,6 +29,186 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          action: string
+          actor_display_name: string
+          actor_id: string | null
+          created_at: string
+          event_id: string
+          id: string
+          summary: string
+        }
+        Insert: {
+          action: string
+          actor_display_name: string
+          actor_id?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          summary: string
+        }
+        Update: {
+          action?: string
+          actor_display_name?: string
+          actor_id?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'audit_log_actor_id_fkey'
+            columns: ['actor_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'audit_log_event_id_fkey'
+            columns: ['event_id']
+            isOneToOne: false
+            referencedRelation: 'events'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      event_members: {
+        Row: {
+          event_id: string
+          joined_at: string
+          left_at: string | null
+          profile_id: string
+          rejoin_blocked_at: string | null
+          role: string
+        }
+        Insert: {
+          event_id: string
+          joined_at?: string
+          left_at?: string | null
+          profile_id: string
+          rejoin_blocked_at?: string | null
+          role?: string
+        }
+        Update: {
+          event_id?: string
+          joined_at?: string
+          left_at?: string | null
+          profile_id?: string
+          rejoin_blocked_at?: string | null
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'event_members_event_id_fkey'
+            columns: ['event_id']
+            isOneToOne: false
+            referencedRelation: 'events'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'event_members_profile_id_fkey'
+            columns: ['profile_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string
+          id: string
+          last_activity_at: string
+          name: string
+          owner_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_activity_at?: string
+          name: string
+          owner_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_activity_at?: string
+          name?: string
+          owner_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'events_owner_id_fkey'
+            columns: ['owner_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      participants: {
+        Row: {
+          active: boolean
+          created_at: string
+          deactivated_at: string | null
+          display_name: string
+          event_id: string
+          id: string
+          merged_into_id: string | null
+          profile_id: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          deactivated_at?: string | null
+          display_name: string
+          event_id: string
+          id?: string
+          merged_into_id?: string | null
+          profile_id?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          deactivated_at?: string | null
+          display_name?: string
+          event_id?: string
+          id?: string
+          merged_into_id?: string | null
+          profile_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'participants_event_id_fkey'
+            columns: ['event_id']
+            isOneToOne: false
+            referencedRelation: 'events'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'participants_merged_into_id_fkey'
+            columns: ['merged_into_id']
+            isOneToOne: false
+            referencedRelation: 'participants'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'participants_profile_id_fkey'
+            columns: ['profile_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -58,7 +238,53 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      allow_event_rejoin: {
+        Args: { target_event_id: string; target_profile_id: string }
+        Returns: undefined
+      }
+      create_event: { Args: { event_name: string }; Returns: Json }
+      create_manual_participant: {
+        Args: { participant_name: string; target_event_id: string }
+        Returns: string
+      }
+      deactivate_participant: {
+        Args: { target_participant_id: string }
+        Returns: undefined
+      }
+      expel_event_member: {
+        Args: { target_event_id: string; target_profile_id: string }
+        Returns: undefined
+      }
+      get_event_invitation: { Args: { target_event_id: string }; Returns: Json }
+      get_invitation_preview: {
+        Args: { invitation_id: string; invitation_secret: string }
+        Returns: Json
+      }
+      join_event: {
+        Args: { invitation_id: string; invitation_secret: string }
+        Returns: string
+      }
+      leave_event: { Args: { target_event_id: string }; Returns: undefined }
+      link_manual_participant: {
+        Args: { target_participant_id: string; target_profile_id: string }
+        Returns: undefined
+      }
+      rename_event: {
+        Args: { event_name: string; target_event_id: string }
+        Returns: undefined
+      }
+      rotate_event_invitation: {
+        Args: { revoke_only?: boolean; target_event_id: string }
+        Returns: Json
+      }
+      set_coadmin: {
+        Args: {
+          make_coadmin: boolean
+          target_event_id: string
+          target_profile_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

@@ -18,6 +18,20 @@ Este archivo registra qué se hizo realmente. No incluir planes como si ya estuv
 
 ## Registros
 
+### 2026-07-18 — Eventos y participantes de Etapa 4
+
+- **Versión:** `0.4.0`.
+- **Objetivo:** permitir organizar juntadas y sus identidades participantes sin adelantar gastos, liquidación o movimientos.
+- **Implementado:** eventos con estado inicial único, listado, apertura y renombrado; roles propietario/coadministrador/miembro; salida y reingreso por invitación; enlace estable recuperable solo por el owner interno, fragmento URL limpiado antes de login y unión explícita; participantes manuales, desactivación, vinculación/fusión con miembros activos e historial visible con snapshot de actor.
+- **Revisión manual:** la invitación se prioriza al inicio para ADMIN y se copia a ancho completo con feedback accesible. ADMIN y COADMIN pueden expulsar cuentas; solo ADMIN desbloquea el reingreso, que nunca es automático.
+- **Ajuste UX final:** las acciones que quitan acceso, rol o participación usan un diálogo nativo accesible, con foco controlado, Escape, restauración al disparador y error dentro del modal. No se agregaron dependencias, migraciones ni cambios remotos.
+- **Áreas/archivos:** migración de eventos, RLS/RPC, tipos Supabase, `features/events`, rutas y páginas de eventos/invitación, estilos y pruebas pgTAP.
+- **Base de datos:** migración `20260718190000_create_events.sql` crea `events`, `event_members`, `participants`, `audit_log` e invitaciones privadas; las correctivas `20260718210000_review_stable_invitations_and_audit_actors.sql` y `20260718220000_add_member_expulsion.sql` estabilizan el enlace, agregan snapshots y bloqueo de reingreso. La visibilidad de perfiles queda limitada a miembros activos.
+- **Verificaciones:** `pnpm supabase:reset`, generación local de tipos, pgTAP (112 pruebas), `pnpm lint`, `pnpm typecheck`, `pnpm test` (96 pruebas), `pnpm test:coverage`, `pnpm build`, integración Supabase JS local y `git diff --check` correctos.
+- **Decisiones:** ADR-019 y ADR-020; se preserva ADR-002.
+- **Pendientes/riesgos:** no incluye gastos, transiciones de estado, archivado, movimientos ni servicios remotos. Quien posea el enlace puede solicitar unirse, pero requiere cuenta, sesión y `UNIRME`.
+- **Commit:** creado durante el cierre de Etapa 4.
+
 ### 2026-07-18 — Flujos de autenticación y perfil de Etapa 3
 
 - **Versión:** `Unreleased`; `package.json` permanece en `0.2.0`.

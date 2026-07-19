@@ -6,6 +6,23 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-18
+
+### Added
+
+- Eventos con creación, listado, apertura, renombrado y estado inicial `Cargando gastos`.
+- Membresías con propietario, coadministrador y miembro; salida/reingreso conservando identidad económica.
+- Invitación estable recuperable y copiable solo por el admin, con fragmento URL, limpieza inmediata y unión explícita.
+- Participantes manuales, desactivación lógica, vinculación administrativa con miembros activos e historial auditable visible.
+
+### Security
+
+- RLS, grants mínimos, RPC transaccionales y pruebas pgTAP para aislamiento de eventos, perfiles compartidos e invitación estable.
+- Snapshots de apodo/nombre en auditoría para conservar el actor visible sin guardar emails ni ampliar perfiles accesibles.
+- Expulsión por ADMIN o COADMIN, bloqueo de reingreso, habilitación posterior exclusiva de ADMIN y preservación de identidad económica.
+- Las membresías inactivas solo quedan visibles al ADMIN; miembros comunes no pueden consultarlas mediante la API.
+- Confirmaciones accesibles en modal para expulsar, salir, desactivar personas y quitar coadmins, con foco, Escape, estado pendiente y errores localizados.
+
 ## [0.3.0] - 2026-07-18
 
 ### Added

@@ -68,7 +68,7 @@ Registrar aquí decisiones que tengan alternativas relevantes o consecuencias fu
 
 ## ADR-009 — Secretos de invitación con hash y fragmento URL
 
-- **Estado:** aceptada.
+- **Estado:** reemplazada por ADR-020.
 - **Fecha:** 2026-07-16.
 - **Decisión:** guardar solo el hash de tokens de invitación de 256 bits y transportar el token en el fragmento de URL, removiéndolo de inmediato y manteniéndolo temporalmente solo en `sessionStorage` durante login.
 - **Motivo:** reducir exposición del secreto en base de datos, logs de servidor y referencias.
@@ -145,3 +145,27 @@ Registrar aquí decisiones que tengan alternativas relevantes o consecuencias fu
 - **Decisión:** `public.profiles` usa `ENABLE ROW LEVEL SECURITY` y no `FORCE ROW LEVEL SECURITY`.
 - **Motivo:** la tabla y la función de alta pertenecen al rol local `postgres`, que posee `BYPASSRLS`. Una prueba temporal con FORCE confirmó que el trigger funciona, los clientes siguen aislados y el owner continúa omitiendo policies; FORCE no agrega defensa efectiva en este entorno.
 - **Consecuencia:** la seguridad cliente depende de grants mínimos y policies probadas con `anon` y JWT autenticados. Los roles administrativos permanecen fuera del frontend y la suite comprueba que FORCE continúa desactivado para evitar seguridad aparente.
+
+## ADR-019 — Membresías, invitaciones y participantes de Etapa 4
+
+- **Estado:** aceptada.
+- **Fecha:** 2026-07-18.
+- **Decisión:** el propietario no puede salir; salir desactiva la membresía y el participante vinculado, un coadministrador vuelve como miembro y el reingreso exige invitación vigente con acción explícita `UNIRME`. Los manuales usan un nombre libre no único y solo se vinculan administrativamente a cuentas ya activas en el evento. Las acciones de esta etapa quedan auditadas y visibles para miembros activos.
+- **Motivo:** preservar historia económica, evitar búsqueda global de perfiles o exposición de emails y mantener permisos simples para grupos pequeños.
+- **Consecuencia:** la UI captura y elimina el fragmento antes de redirigir a login; no hay incorporación automática, reclamo unilateral ni vinculación a cuentas externas al evento.
+
+## ADR-020 — Invitación estable y actor preservado
+
+- **Estado:** aceptada.
+- **Fecha:** 2026-07-18.
+- **Decisión:** cada evento conserva un único enlace de invitación estable. Su identificador aleatorio queda solamente en `private.event_invitations` y la RPC de lectura se limita al owner interno. El enlace usa fragmento URL, que la SPA limpia antes de redirects. La auditoría guarda el apodo o nombre visible del actor como snapshot transaccional, sin email.
+- **Motivo:** un grupo personal necesita recuperar y copiar su enlace desde cualquier sesión sin sumar infraestructura, mientras protege el enlace de consultas no autorizadas y el historial de cambios posteriores de perfil o membresía.
+- **Consecuencia:** se elimina regeneración/revocación; tener el enlace permite solicitar unión, nunca ingresar automáticamente. La interfaz usa `PERSONAS` para identidades económicas, `MIEMBROS` para cuentas unidas y muestra `ADMIN`/`COADMIN` como roles.
+
+## ADR-021 — Expulsión y reingreso bloqueado
+
+- **Estado:** aceptada.
+- **Fecha:** 2026-07-18.
+- **Decisión:** ADMIN y COADMIN pueden expulsar cuentas activas que no sean el owner ni ellas mismas. La expulsión desactiva membresía y persona, reduce el rol a miembro, bloquea la RPC de unión y audita actor y persona. Solo ADMIN puede permitir un reingreso posterior, que sigue requiriendo invitación y `UNIRME`.
+- **Motivo:** permitir moderación compartida sin borrar historia ni convertir una invitación permanente en un bypass de seguridad.
+- **Consecuencia:** las cuentas expulsadas aparecen solo para ADMIN en una sección administrativa discreta; salida voluntaria y expulsión quedan diferenciadas en historial.

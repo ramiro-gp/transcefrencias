@@ -51,13 +51,17 @@ Estado al 2026-07-18: completada en `0.3.0` y probada localmente con Docker, Mai
 - Crear/listar/abrir eventos.
 - Enlace de invitación y acción `UNIRME`.
 - Salir y volver a unirse.
-- Roles admin/coadmin/miembro.
-- Participantes manuales y futura vinculación.
+- Roles propietario/coadministrador/miembro.
+- Participantes manuales y vinculación administrativa con miembros activos.
+- Enlace de invitación estable, visible y copiable por el admin; visibilidad mínima entre miembros e historial auditable.
+- Expulsión administrativa, bloqueo explícito de reingreso y habilitación posterior por el admin.
+
+Estado al 2026-07-18: completada en `0.4.0` y validada localmente con migraciones versionadas, RLS/pgTAP, integración Supabase JS, invitación estable, roles, personas manuales, historial, expulsión y diálogos accesibles. Gastos, transiciones de estado, servicios remotos y despliegue permanecen fuera de esta etapa.
 
 ## Etapa 5 — Gastos
 
 - CRUD con permisos e historial.
-- Incorporar React Hook Form, Zod y sus resolvers al implementar formularios reales.
+- React Hook Form, Zod y sus resolvers ya se incorporaron en Etapa 3; reutilizarlos en formularios de gastos.
 - Categorías definidas.
 - Selector de importe sin teclado por defecto.
 - Selección inicial de todos los participantes.

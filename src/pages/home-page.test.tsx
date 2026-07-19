@@ -8,16 +8,17 @@ vi.mock('../app/auth-context', () => ({
   useAuth: () => ({ user: { id: 'user-a' } }),
 }))
 
-vi.mock('../features/profile/use-profile-query', () => ({
-  useProfileQuery: () => ({
+vi.mock('../features/events/event-queries', () => ({
+  eventListKey: () => ['events'],
+  useEventList: () => ({
     isLoading: false,
     isError: false,
-    data: { id: 'user-a', fullName: 'Ana María', nickname: 'Nani' },
+    data: [],
   }),
 }))
 
 describe('HomePage', () => {
-  it('shows the real private empty state without inventing events', () => {
+  it('shows the empty event state and creation form', () => {
     render(
       <QueryClientProvider client={new QueryClient()}>
         <MemoryRouter>
@@ -28,13 +29,15 @@ describe('HomePage', () => {
 
     expect(
       screen.getByRole('heading', {
-        name: 'Hola, Nani.',
+        name: 'JUNTADAS',
       }),
     ).toBeInTheDocument()
     expect(
-      screen.getByText('Nani, la gestión de eventos será la próxima función.'),
+      screen.getByText(
+        'Todavía no participás de ningún evento. Creá uno o abrí un enlace de invitación.',
+      ),
     ).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'EDITAR PERFIL' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'CREAR EVENTO' })).toBeInTheDocument()
     expect(
       screen.queryByRole('button', { name: 'CERRAR SESIÓN' }),
     ).not.toBeInTheDocument()

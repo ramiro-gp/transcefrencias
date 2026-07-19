@@ -2,7 +2,7 @@
 
 PWA mobile-first para dividir gastos de una juntada de manera justa: cada gasto se reparte solo entre quienes participaron y el resultado reduce transferencias innecesarias.
 
-La implementación actual incluye la base de la Etapa 1, el motor financiero aislado completo de la Etapa 2 y la Etapa 3 completada sobre Supabase local: registro sin confirmación de email, login/logout, recuperación, perfil propio, guards, RLS y pruebas reales con Mailpit. Todavía no existen eventos persistidos ni UI financiera; Supabase remoto, SMTP remoto y Vercel permanecen sin configurar.
+La implementación actual incluye la base de la Etapa 1, el motor financiero aislado de la Etapa 2, autenticación/perfiles de la Etapa 3 y eventos/participantes de la Etapa 4 sobre Supabase local. Incluye invitación estable, roles, personas manuales, historial auditable, expulsión/reingreso y RLS probada. Los gastos y la UI financiera pertenecen a la siguiente etapa; Supabase remoto, SMTP remoto y Vercel permanecen sin configurar.
 
 ## Stack actual
 
