@@ -1,5 +1,6 @@
 import { FinanceDomainError } from './errors'
 import type { ParticipantOriginalBalance } from './types'
+import { safeAdd } from './validation'
 
 export interface ParticipantIdentity {
   readonly id: string
@@ -37,9 +38,9 @@ export function consolidateOriginalBalances(
       prior
         ? {
             ...prior,
-            amount: prior.amount + balance.amount,
-            paidAmount: prior.paidAmount + balance.paidAmount,
-            consumedAmount: prior.consumedAmount + balance.consumedAmount,
+            amount: safeAdd(prior.amount, balance.amount),
+            paidAmount: safeAdd(prior.paidAmount, balance.paidAmount),
+            consumedAmount: safeAdd(prior.consumedAmount, balance.consumedAmount),
             contributions: [...prior.contributions, ...balance.contributions],
           }
         : { ...balance, participantId: id },

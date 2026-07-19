@@ -78,6 +78,8 @@ Estado al 2026-07-19: completada en `0.5.0` con gastos auditables, múltiples pa
 - Reapertura con advertencias.
 - Vista personal y vista general.
 
+Estado al 2026-07-19: completada en `0.6.0` con transición auditada y serializada, bloqueos por estado en RLS/RPC y UI, balances consolidados y explicables, transferencias exactas en Worker, presupuesto protegido, cancelación, vistas mobile-first y revisión humana aprobada. Movimientos, saldado y archivado permanecen fuera de esta etapa.
+
 ## Etapa 7 — Movimientos opcionales
 
 - Informar pago o cobro.

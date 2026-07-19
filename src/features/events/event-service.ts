@@ -4,11 +4,13 @@ import { supabase } from '../../lib/supabase/client'
 type EventClient = Pick<typeof supabase, 'from' | 'rpc'>
 
 export type EventRole = 'owner' | 'coadmin' | 'member'
+export type EventStatus = 'loading_expenses' | 'paying'
 
 export interface EventSummary {
   readonly id: string
   readonly name: string
   readonly role: EventRole
+  readonly status: EventStatus
   readonly lastActivityAt: string
 }
 
@@ -17,6 +19,7 @@ export interface EventDetail {
   readonly name: string
   readonly ownerId: string
   readonly role: EventRole
+  readonly status: EventStatus
   readonly members: readonly EventMember[]
   readonly blockedMembers: readonly BlockedMember[]
   readonly participants: readonly Participant[]
@@ -81,13 +84,18 @@ function toRole(value: string): EventRole {
   throw new EventRequestError()
 }
 
+function toStatus(value: string): EventStatus {
+  if (value === 'loading_expenses' || value === 'paying') return value
+  throw new EventRequestError()
+}
+
 export async function listEvents(
   client: EventClient,
   userId: string,
 ): Promise<EventSummary[]> {
   const { data, error } = await client
     .from('event_members')
-    .select('role, events!inner(id, name, last_activity_at)')
+    .select('role, events!inner(id, name, status, last_activity_at)')
     .eq('profile_id', userId)
     .is('left_at', null)
     .order('last_activity_at', { referencedTable: 'events', ascending: false })
@@ -101,6 +109,7 @@ export async function listEvents(
       name: event.name,
       lastActivityAt: event.last_activity_at,
       role: toRole(row.role),
+      status: toStatus(event.status),
     }
   })
 }
@@ -118,7 +127,11 @@ export async function getEventDetail(
     { data: participants, error: participantsError },
     { data: audit, error: auditError },
   ] = await Promise.all([
-    client.from('events').select('id, name, owner_id').eq('id', eventId).maybeSingle(),
+    client
+      .from('events')
+      .select('id, name, owner_id, status')
+      .eq('id', eventId)
+      .maybeSingle(),
     client
       .from('event_members')
       .select('role')
@@ -174,6 +187,7 @@ export async function getEventDetail(
     name: event.name,
     ownerId: event.owner_id,
     role: toRole(membership.role),
+    status: toStatus(event.status),
     members: members.map((member) => {
       const profile = member.profiles
       if (!profile || Array.isArray(profile)) throw new EventRequestError()
@@ -228,6 +242,22 @@ export async function renameEvent(client: EventClient, eventId: string, name: st
     event_name: name.trim(),
   })
   if (error) throw new EventRequestError('No pudimos renombrar el evento.')
+}
+
+export async function transitionEventToPaying(client: EventClient, eventId: string) {
+  const { error } = await client.rpc('transition_event_to_paying', {
+    target_event_id: eventId,
+    expected_status: 'loading_expenses',
+  })
+  if (error) throw new EventRequestError(error.message)
+}
+
+export async function reopenEventExpenses(client: EventClient, eventId: string) {
+  const { error } = await client.rpc('reopen_event_expenses', {
+    target_event_id: eventId,
+    expected_status: 'paying',
+  })
+  if (error) throw new EventRequestError(error.message)
 }
 
 export async function callEventRpc(

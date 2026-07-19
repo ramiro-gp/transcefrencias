@@ -346,6 +346,8 @@ h1 {
 }
 
 .button-wide {
+  display: flex;
+  align-items: center;
   justify-content: center;
   width: 100%;
 }
@@ -452,16 +454,24 @@ h1 {
   letter-spacing: 0.04em;
 }
 
-.section-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+.financial-title {
+  color: #a3e635;
+}
+
+.expense-content {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.expense-create-action {
+  min-height: 2.75rem;
 }
 
 .expense-list {
   display: grid;
   gap: 0.75rem;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -567,12 +577,6 @@ h1 {
   .event-summary {
     grid-template-columns: 1fr;
   }
-  .section-heading .button {
-    width: 100%;
-  }
-  .section-heading {
-    display: grid;
-  }
 }
 
 .amount-input {
@@ -677,6 +681,48 @@ h1 {
 
 .invitation-action {
   width: 100%;
+}
+
+.balance-list li {
+  align-items: flex-start;
+}
+
+.balance-summary {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.balance-name {
+  font-size: 0.8125rem;
+}
+
+.balance-result {
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.balance-credit {
+  color: #a3e635;
+}
+
+.balance-debt {
+  color: #fecaca;
+}
+
+.balance-settled {
+  color: #d4d4d8;
+}
+
+.balance-explanation {
+  align-self: flex-end;
+  color: #a1a1aa;
+  font-size: 0.625rem;
+}
+
+.balance-explanation summary {
+  color: #a3e635;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .copy-feedback {

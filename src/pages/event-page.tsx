@@ -16,7 +16,9 @@ import {
   callEventRpc,
   createManualParticipant,
   getEventInvitation,
+  reopenEventExpenses,
   renameEvent,
+  transitionEventToPaying,
 } from '../features/events/event-service'
 import { eventNameSchema, participantNameSchema } from '../features/events/event-schemas'
 import { invitationUrl } from '../features/events/invitation-storage'
@@ -29,6 +31,7 @@ import {
   useExpenses,
 } from '../features/expenses/expense-queries'
 import { calculatePersonalExpenseSummary } from '../features/expenses/expense-summary'
+import { SettlementView } from '../features/settlement/settlement-view'
 
 type NameForm = { name: string }
 
@@ -54,6 +57,7 @@ export function EventPage() {
       : undefined
   const isAdmin = event.data?.role === 'owner' || event.data?.role === 'coadmin'
   const isOwner = event.data?.role === 'owner'
+  const isLoadingExpenses = event.data?.status !== 'paying'
   const removeExpense = useMutation({
     mutationFn: (expense: Parameters<typeof deleteExpense>[1]) =>
       deleteExpense(supabase, expense),
@@ -68,6 +72,17 @@ export function EventPage() {
     mutationFn: (values: NameForm) =>
       createManualParticipant(supabase, eventId!, values.name),
     onSuccess: refresh,
+  })
+  const status = useMutation({
+    mutationFn: (next: 'paying' | 'loading_expenses') =>
+      next === 'paying'
+        ? transitionEventToPaying(supabase, eventId!)
+        : reopenEventExpenses(supabase, eventId!),
+    onSuccess: async () => {
+      if (!eventId) return
+      await invalidateExpenseQueries(queryClient, eventId)
+      if (user) await queryClient.invalidateQueries({ queryKey: eventListKey(user.id) })
+    },
   })
   const action = useMutation({
     mutationFn: ({
@@ -139,8 +154,13 @@ export function EventPage() {
   }
   return (
     <section className="event-detail" aria-labelledby="event-title">
-      <p className="eyebrow">CARGANDO GASTOS</p>
+      <p className="eyebrow">{isLoadingExpenses ? 'CARGANDO GASTOS' : 'HORA DE PAGAR'}</p>
       <h1 id="event-title">{data.name}</h1>
+      {!isLoadingExpenses && (
+        <p className="form-feedback" role="status">
+          LOS GASTOS ESTÁN CERRADOS. REVISÁ LOS SALDOS Y LAS TRANSFERENCIAS SUGERIDAS.
+        </p>
+      )}
       {balanceError && (
         <p className="form-feedback" role="alert">
           {balanceError}
@@ -176,83 +196,133 @@ export function EventPage() {
           if (!open) setConfirmation(null)
         }}
       />
-      {(rename.isError || manual.isError || action.isError) && (
+      {(rename.isError || manual.isError || action.isError || status.isError) && (
         <p className="form-feedback" role="alert">
-          {rename.error?.message ?? manual.error?.message ?? action.error?.message}
+          {rename.error?.message ??
+            manual.error?.message ??
+            action.error?.message ??
+            status.error?.message}
         </p>
       )}
-      <section className="event-section" aria-labelledby="expenses-title">
-        <div className="section-heading">
-          <h2 id="expenses-title">GASTOS</h2>
-          <Link
-            className="button button-primary button-small"
-            to={`/eventos/${eventId}/gastos/nuevo`}
-          >
-            CARGAR GASTO
-          </Link>
-        </div>
-        {expenses.isLoading && <p role="status">CARGANDO GASTOS…</p>}
-        {expenses.isError && (
-          <p className="form-feedback" role="alert">
-            {expenses.error.message}{' '}
-            <button className="link-inline" onClick={() => void expenses.refetch()}>
-              REINTENTAR
+      {isAdmin && (
+        <section className="event-section">
+          {isLoadingExpenses ? (
+            <button
+              className="button button-primary button-wide"
+              disabled={status.isPending}
+              onClick={() =>
+                setConfirmation({
+                  title: 'HORA DE PAGAR',
+                  description:
+                    'Los gastos quedarán cerrados hasta que un ADMIN o COADMIN reabra la carga.',
+                  confirmLabel: 'TODOS LOS GASTOS FUERON CARGADOS',
+                  execute: () => status.mutateAsync('paying'),
+                })
+              }
+            >
+              TODOS LOS GASTOS FUERON CARGADOS
             </button>
-          </p>
-        )}
-        {expenses.data?.length === 0 && <p>Todavía no hay gastos cargados.</p>}
-        {expenses.data && expenses.data.length > 0 && (
-          <ul className="expense-list">
-            {expenses.data.map((expense) => {
-              const payer = expense.payers
-                .map(
-                  (payer) =>
-                    `${data.participants.find((participant) => participant.id === payer.participantId)?.displayName ?? 'Persona histórica'} ${formatMoney(payer.amount)}`,
+          ) : (
+            <button
+              className="button"
+              disabled={status.isPending}
+              onClick={() =>
+                setConfirmation({
+                  title: 'REABRIR CARGA',
+                  description:
+                    'Podrás corregir gastos. Los balances y transferencias sugeridas pueden cambiar.',
+                  confirmLabel: 'REABRIR CARGA',
+                  execute: () => status.mutateAsync('loading_expenses'),
+                })
+              }
+            >
+              REABRIR CARGA DE GASTOS
+            </button>
+          )}
+        </section>
+      )}
+      {!isLoadingExpenses && (
+        <SettlementView
+          expenses={expenses.data}
+          participants={data.participants}
+          userId={user?.id ?? ''}
+        />
+      )}
+      <section className="event-section" aria-labelledby="expenses-title">
+        <h2 id="expenses-title">GASTOS</h2>
+        <div className="expense-content">
+          {isLoadingExpenses && (
+            <Link
+              className="button button-primary button-wide expense-create-action"
+              to={`/eventos/${eventId}/gastos/nuevo`}
+            >
+              CARGAR GASTO
+            </Link>
+          )}
+          {expenses.isLoading && <p role="status">CARGANDO GASTOS…</p>}
+          {expenses.isError && (
+            <p className="form-feedback" role="alert">
+              {expenses.error.message}{' '}
+              <button className="link-inline" onClick={() => void expenses.refetch()}>
+                REINTENTAR
+              </button>
+            </p>
+          )}
+          {expenses.data?.length === 0 && <p>Todavía no hay gastos cargados.</p>}
+          {expenses.data && expenses.data.length > 0 && (
+            <ul className="expense-list">
+              {expenses.data.map((expense) => {
+                const payer = expense.payers
+                  .map(
+                    (payer) =>
+                      `${data.participants.find((participant) => participant.id === payer.participantId)?.displayName ?? 'Persona histórica'} ${formatMoney(payer.amount)}`,
+                  )
+                  .join(' · ')
+                const canManage =
+                  isLoadingExpenses && (isAdmin || expense.createdBy === user?.id)
+                return (
+                  <li key={expense.id}>
+                    <div>
+                      <strong>{expense.concept}</strong>
+                      <small>
+                        {categoryLabel(expense.category)} · {payer} ·{' '}
+                        {expense.participantIds.length} participan
+                      </small>
+                    </div>
+                    <div>
+                      <strong>{formatMoney(expense.amount)}</strong>
+                      {canManage && (
+                        <div className="button-row">
+                          <Link
+                            className="button button-small"
+                            to={`/eventos/${eventId}/gastos/${expense.id}/editar`}
+                          >
+                            EDITAR
+                          </Link>
+                          <button
+                            className="button button-small button-danger"
+                            onClick={() =>
+                              setConfirmation({
+                                title: 'ELIMINAR GASTO',
+                                description: `Vas a eliminar ${expense.concept} del cálculo. El historial se conserva.`,
+                                confirmLabel: 'ELIMINAR GASTO',
+                                execute: async () => {
+                                  await removeExpense.mutateAsync(expense)
+                                },
+                              })
+                            }
+                          >
+                            ELIMINAR
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </li>
                 )
-                .join(' · ')
-              const canManage = isAdmin || expense.createdBy === user?.id
-              return (
-                <li key={expense.id}>
-                  <div>
-                    <strong>{expense.concept}</strong>
-                    <small>
-                      {categoryLabel(expense.category)} · {payer} ·{' '}
-                      {expense.participantIds.length} participan
-                    </small>
-                  </div>
-                  <div>
-                    <strong>{formatMoney(expense.amount)}</strong>
-                    {canManage && (
-                      <div className="button-row">
-                        <Link
-                          className="button button-small"
-                          to={`/eventos/${eventId}/gastos/${expense.id}/editar`}
-                        >
-                          EDITAR
-                        </Link>
-                        <button
-                          className="button button-small button-danger"
-                          onClick={() =>
-                            setConfirmation({
-                              title: 'ELIMINAR GASTO',
-                              description: `Vas a eliminar ${expense.concept} del cálculo. El historial se conserva.`,
-                              confirmLabel: 'ELIMINAR GASTO',
-                              execute: async () => {
-                                await removeExpense.mutateAsync(expense)
-                              },
-                            })
-                          }
-                        >
-                          ELIMINAR
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </li>
-              )
-            })}
-          </ul>
-        )}
+              })}
+            </ul>
+          )}
+        </div>
       </section>
       {isOwner && (
         <section className="event-section invitation-section">
@@ -276,23 +346,6 @@ export function EventPage() {
             </p>
           )}
         </section>
-      )}
-      {isAdmin && (
-        <form
-          className="inline-form"
-          onSubmit={(event) =>
-            void renameForm.handleSubmit((values) => rename.mutate(values))(event)
-          }
-        >
-          <label htmlFor="rename-event">NOMBRE DEL EVENTO</label>
-          <input id="rename-event" {...renameForm.register('name')} />
-          {renameForm.formState.errors.name && (
-            <p className="field-error">{renameForm.formState.errors.name.message}</p>
-          )}
-          <button className="button" disabled={rename.isPending}>
-            RENOMBRAR
-          </button>
-        </form>
       )}
       <section className="event-section">
         <h2>MIEMBROS</h2>
@@ -329,28 +382,31 @@ export function EventPage() {
                   {member.role === 'coadmin' ? 'QUITAR COADMIN' : 'HACER COADMIN'}
                 </button>
               )}
-              {isAdmin && member.role !== 'owner' && member.profileId !== user?.id && (
-                <button
-                  className="button button-small button-danger"
-                  onClick={() =>
-                    setConfirmation({
-                      title: `EXPULSAR A ${(member.nickname ?? member.fullName).toUpperCase()}`,
-                      description: `${member.nickname ?? member.fullName} perderá el acceso al evento hasta que el ADMIN permita su ingreso.`,
-                      confirmLabel: 'EXPULSAR',
-                      execute: () =>
-                        action.mutateAsync({
-                          name: 'expel_event_member',
-                          args: {
-                            target_event_id: data.id,
-                            target_profile_id: member.profileId,
-                          },
-                        }),
-                    })
-                  }
-                >
-                  EXPULSAR
-                </button>
-              )}
+              {isLoadingExpenses &&
+                isAdmin &&
+                member.role !== 'owner' &&
+                member.profileId !== user?.id && (
+                  <button
+                    className="button button-small button-danger"
+                    onClick={() =>
+                      setConfirmation({
+                        title: `EXPULSAR A ${(member.nickname ?? member.fullName).toUpperCase()}`,
+                        description: `${member.nickname ?? member.fullName} perderá el acceso al evento hasta que el ADMIN permita su ingreso.`,
+                        confirmLabel: 'EXPULSAR',
+                        execute: () =>
+                          action.mutateAsync({
+                            name: 'expel_event_member',
+                            args: {
+                              target_event_id: data.id,
+                              target_profile_id: member.profileId,
+                            },
+                          }),
+                      })
+                    }
+                  >
+                    EXPULSAR
+                  </button>
+                )}
             </li>
           ))}
         </ul>
@@ -368,53 +424,58 @@ export function EventPage() {
                     : 'MANUAL'
                   : 'INACTIVO'}
               </small>
-              {isAdmin && participant.active && !participant.profileId && (
-                <div className="button-row">
-                  <button
-                    className="button button-small"
-                    onClick={() => setParticipantToLink(participant.id)}
-                  >
-                    VINCULAR
-                  </button>
-                  <button
-                    className="button button-small"
-                    onClick={() =>
-                      setConfirmation({
-                        title: `DESACTIVAR A ${participant.displayName}`,
-                        description: `${participant.displayName} dejará de estar disponible para gastos nuevos, pero su historial se conservará.`,
-                        confirmLabel: 'DESACTIVAR',
-                        execute: () =>
-                          action.mutateAsync({
-                            name: 'deactivate_participant',
-                            args: { target_participant_id: participant.id },
-                          }),
-                      })
-                    }
-                  >
-                    DESACTIVAR
-                  </button>
-                </div>
-              )}
+              {isLoadingExpenses &&
+                isAdmin &&
+                participant.active &&
+                !participant.profileId && (
+                  <div className="button-row">
+                    <button
+                      className="button button-small"
+                      onClick={() => setParticipantToLink(participant.id)}
+                    >
+                      VINCULAR
+                    </button>
+                    <button
+                      className="button button-small"
+                      onClick={() =>
+                        setConfirmation({
+                          title: `DESACTIVAR A ${participant.displayName}`,
+                          description: `${participant.displayName} dejará de estar disponible para gastos nuevos, pero su historial se conservará.`,
+                          confirmLabel: 'DESACTIVAR',
+                          execute: () =>
+                            action.mutateAsync({
+                              name: 'deactivate_participant',
+                              args: { target_participant_id: participant.id },
+                            }),
+                        })
+                      }
+                    >
+                      DESACTIVAR
+                    </button>
+                  </div>
+                )}
             </li>
           ))}
         </ul>
-        <form
-          className="inline-form"
-          onSubmit={(event) =>
-            void manualForm.handleSubmit((values) => manual.mutate(values))(event)
-          }
-        >
-          <label htmlFor="manual-name">AGREGAR PERSONA MANUAL</label>
-          <input id="manual-name" {...manualForm.register('name')} />
-          {manualForm.formState.errors.name && (
-            <p className="field-error">{manualForm.formState.errors.name.message}</p>
-          )}
-          <button className="button" disabled={manual.isPending}>
-            AGREGAR
-          </button>
-        </form>
+        {isLoadingExpenses && (
+          <form
+            className="inline-form"
+            onSubmit={(event) =>
+              void manualForm.handleSubmit((values) => manual.mutate(values))(event)
+            }
+          >
+            <label htmlFor="manual-name">AGREGAR PERSONA MANUAL</label>
+            <input id="manual-name" {...manualForm.register('name')} />
+            {manualForm.formState.errors.name && (
+              <p className="field-error">{manualForm.formState.errors.name.message}</p>
+            )}
+            <button className="button" disabled={manual.isPending}>
+              AGREGAR
+            </button>
+          </form>
+        )}
       </section>
-      {isAdmin && participantToLink && (
+      {isLoadingExpenses && isAdmin && participantToLink && (
         <section className="event-section">
           <h2>VINCULAR PERSONA</h2>
           <p>Solo se pueden vincular cuentas que ya participan del evento.</p>
@@ -463,7 +524,7 @@ export function EventPage() {
           </div>
         </section>
       )}
-      {isOwner && data.blockedMembers.length > 0 && (
+      {isLoadingExpenses && isOwner && data.blockedMembers.length > 0 && (
         <section className="event-section">
           <h2>CUENTAS EXPULSADAS</h2>
           <ul className="member-list">
@@ -489,7 +550,7 @@ export function EventPage() {
           </ul>
         </section>
       )}
-      {data.role !== 'owner' && (
+      {isLoadingExpenses && data.role !== 'owner' && (
         <section className="event-section">
           <button
             className="button"
@@ -512,6 +573,23 @@ export function EventPage() {
             SALIR DEL EVENTO
           </button>
         </section>
+      )}
+      {isAdmin && (
+        <form
+          className="inline-form"
+          onSubmit={(event) =>
+            void renameForm.handleSubmit((values) => rename.mutate(values))(event)
+          }
+        >
+          <label htmlFor="rename-event">NOMBRE DEL EVENTO</label>
+          <input id="rename-event" {...renameForm.register('name')} />
+          {renameForm.formState.errors.name && (
+            <p className="field-error">{renameForm.formState.errors.name.message}</p>
+          )}
+          <button className="button" disabled={rename.isPending}>
+            RENOMBRAR
+          </button>
+        </form>
       )}
       <section className="event-section">
         <h2>HISTORIAL</h2>

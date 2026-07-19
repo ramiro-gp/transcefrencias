@@ -71,6 +71,8 @@ El propietario y coadministrador pueden expulsar a un miembro o coadministrador 
 
 Durante `Hora de pagar`, los miembros comunes no modifican gastos. Un propietario o coadministrador debe reabrir el evento y aceptar la advertencia de recálculo.
 
+Durante `Hora de pagar` también se congelan unión, salida, expulsión y altas, bajas o vinculaciones de personas. Renombrar el evento, copiar la invitación y administrar roles no altera balances y permanece disponible según los permisos existentes. La invitación puede abrirse, pero `UNIRME` requiere que el evento vuelva a `Cargando gastos`.
+
 ## 4. Participantes manuales
 
 - Representan personas sin cuenta o sin acceso a la aplicación.
@@ -137,6 +139,7 @@ Objetivo: cargar el monto habitual sin abrir el teclado del celular.
 - Se muestran saldos y transferencias optimizadas.
 - La explicación debe permitir rastrear el resultado hasta los gastos.
 - Un administrador puede reabrir; se advierte que los resultados pueden cambiar.
+- Para más de 15 saldos no nulos, el primer cálculo exacto usa un presupuesto determinista de 250.000 estados. Si se agota, se muestran balances sin sugerencias parciales y se puede continuar el cálculo exacto, con advertencia y cancelación explícita.
 
 ## 8. Movimientos opcionales
 

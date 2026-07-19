@@ -57,6 +57,7 @@ export function HomePage() {
               <Link to={`/eventos/${event.id}`}>
                 <span>{event.name}</span>
                 <small>
+                  {event.status === 'paying' ? 'HORA DE PAGAR · ' : 'CARGANDO GASTOS · '}
                   {event.role === 'owner'
                     ? 'PROPIETARIO'
                     : event.role === 'coadmin'

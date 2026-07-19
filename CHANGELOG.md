@@ -6,6 +6,17 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-07-19
+
+### Added
+
+- Transición auditada entre carga de gastos y hora de pagar, liquidación explicable y transferencias exactas derivadas sin persistir balances.
+- Vistas personal y general, explicaciones por gasto y cálculo exacto aislado en Web Worker con continuación y cancelación explícitas.
+
+### Security
+
+- Durante `Hora de pagar` se bloquean en base de datos y UI gastos, unión, salida, expulsión y cambios de identidades económicas; solo una reapertura administrativa permite modificarlos.
+
 ## [0.5.0] - 2026-07-19
 
 ### Changed

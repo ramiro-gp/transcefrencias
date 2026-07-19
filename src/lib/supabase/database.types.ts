@@ -435,6 +435,10 @@ export type Database = {
         Args: { event_name: string; target_event_id: string }
         Returns: undefined
       }
+      reopen_event_expenses: {
+        Args: { expected_status: string; target_event_id: string }
+        Returns: string
+      }
       rotate_event_invitation: {
         Args: { revoke_only?: boolean; target_event_id: string }
         Returns: Json
@@ -446,6 +450,10 @@ export type Database = {
           target_profile_id: string
         }
         Returns: undefined
+      }
+      transition_event_to_paying: {
+        Args: { expected_status: string; target_event_id: string }
+        Returns: string
       }
       update_expense: {
         Args: {

@@ -192,3 +192,11 @@ Registrar aquí decisiones que tengan alternativas relevantes o consecuencias fu
 - **Fecha:** 2026-07-19.
 - **Decisión:** un gasto tiene uno o más pagadores con aportes explícitos que suman exactamente el total. Gastos y aportes admiten cualquier peso entero positivo seguro; los pasos de $500/$1K/$5K son solo atajos de interfaz.
 - **Consecuencia:** cuotas y aportes distribuyen remanentes en pesos enteros deterministas; no hay redondeo automático de entrada manual.
+
+## ADR-025 — Hora de pagar derivada y protegida
+
+- **Estado:** aceptada.
+- **Fecha:** 2026-07-20.
+- **Decisión:** `Hora de pagar` deriva balances y transferencias desde gastos sin persistirlos. La primera búsqueda con más de 15 saldos no nulos se ejecuta en un Worker con presupuesto determinista de 250.000 estados; si se agota no hay aproximación y la persona puede continuar o cancelar explícitamente. Durante ese estado se congelan gastos, membresías e identidades económicas.
+- **Motivo:** proteger la consistencia del resultado, evitar bloquear el hilo principal y conservar una solución gratuita y proporcional para grupos pequeños.
+- **Consecuencia:** ADMIN y COADMIN deben reabrir antes de cambiar datos económicos; el estado persistido sigue siendo la fuente de verdad y el refetch se limita a consultas del evento al recuperar foco.

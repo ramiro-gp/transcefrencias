@@ -48,6 +48,16 @@ export function ExpenseFormPage() {
         </Link>
       </section>
     )
+  if (event.data.status !== 'loading_expenses')
+    return (
+      <section className="page-state" role="status">
+        <p className="eyebrow">HORA DE PAGAR</p>
+        <p>Un ADMIN o COADMIN debe reabrir la carga antes de modificar gastos.</p>
+        <Link className="button" to={`/eventos/${eventId}`}>
+          VOLVER AL EVENTO
+        </Link>
+      </section>
+    )
   const initialValues: ExpenseFormValues = editing
     ? {
         concept: expense.data!.concept,

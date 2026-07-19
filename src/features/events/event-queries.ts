@@ -10,6 +10,7 @@ export function useEventList(userId: string | null) {
     queryKey: userId ? eventListKey(userId) : ['events', 'anonymous'],
     queryFn: () => listEvents(supabase, userId!),
     enabled: userId !== null,
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -18,5 +19,6 @@ export function useEventDetail(eventId: string | undefined, userId: string | nul
     queryKey: eventId ? eventDetailKey(eventId) : ['event', 'missing'],
     queryFn: () => getEventDetail(supabase, eventId!, userId!),
     enabled: Boolean(eventId && userId),
+    refetchOnWindowFocus: true,
   })
 }

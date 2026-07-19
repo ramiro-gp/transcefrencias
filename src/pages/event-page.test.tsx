@@ -91,6 +91,16 @@ describe('EventPage', () => {
     expect(screen.getByRole('button', { name: 'COPIAR INVITACIÓN' })).toHaveClass(
       'invitation-action',
     )
+    expect(
+      screen.getByRole('button', { name: 'TODOS LOS GASTOS FUERON CARGADOS' }),
+    ).toHaveClass('button-primary', 'button-wide')
+    const rename = screen.getByText('NOMBRE DEL EVENTO').closest('form')
+    const people = screen.getByRole('heading', { name: 'PERSONAS' })
+    const history = screen.getByRole('heading', { name: 'HISTORIAL' })
+    expect(people.compareDocumentPosition(rename!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+    expect(rename!.compareDocumentPosition(history)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
     fireEvent.click(screen.getByRole('button', { name: 'EXPULSAR' }))
     expect(screen.getByRole('heading', { name: 'EXPULSAR A PEDRO' })).toBeInTheDocument()
     expect(screen.getByText(/Pedro perderá el acceso/)).toBeInTheDocument()
@@ -116,6 +126,10 @@ describe('EventPage', () => {
       </QueryClientProvider>,
     )
     expect(screen.getByText('CARGANDO GASTOS…')).toBeInTheDocument()
+    const createExpense = screen.getByRole('link', { name: 'CARGAR GASTO' })
+    const expenseContent = createExpense.closest('.expense-content')
+    expect(expenseContent?.firstElementChild).toBe(createExpense)
+    expect(screen.getByText('CARGANDO GASTOS…').parentElement).toBe(expenseContent)
     expenseQuery.current = { isLoading: false, isError: false, error: null, data: [] }
     rerender(
       <QueryClientProvider client={new QueryClient()}>
@@ -127,6 +141,9 @@ describe('EventPage', () => {
       </QueryClientProvider>,
     )
     expect(screen.getByText('Todavía no hay gastos cargados.')).toBeInTheDocument()
+    expect(screen.getByText('Todavía no hay gastos cargados.').parentElement).toBe(
+      screen.getByRole('link', { name: 'CARGAR GASTO' }).closest('.expense-content'),
+    )
     expect(screen.getByText('ESTÁS AL DÍA')).toBeInTheDocument()
   })
   it('shows totals, personal debt, and multiple payer contributions', () => {
@@ -164,7 +181,14 @@ describe('EventPage', () => {
     expect(screen.getByText(/Rama \$1\.000 · Pedro \$1\.000/)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'CARGAR GASTO' })).toHaveClass(
       'button-primary',
+      'button-wide',
+      'expense-create-action',
     )
+    const createExpense = screen.getByRole('link', { name: 'CARGAR GASTO' })
+    const expenseList = createExpense
+      .closest('.expense-content')
+      ?.querySelector('.expense-list')
+    expect(createExpense.nextElementSibling).toBe(expenseList)
   })
   it('shows remote and controlled consolidation errors', () => {
     expenseQuery.current = {

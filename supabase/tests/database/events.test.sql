@@ -215,5 +215,51 @@ select is(
   'link audit identifies both people'
 );
 
+set local request.jwt.claim.sub = '20000000-0000-0000-0000-000000000001';
+set local role authenticated;
+select public.create_expense(
+  (select (result ->> 'event_id')::uuid from event_result),
+  'Cierre', 'food', 500,
+  array[(select id from public.participants where event_id = (select (result ->> 'event_id')::uuid from event_result) and profile_id = '20000000-0000-0000-0000-000000000001')],
+  array[500::bigint],
+  array[(select id from public.participants where event_id = (select (result ->> 'event_id')::uuid from event_result) and profile_id = '20000000-0000-0000-0000-000000000001')]
+);
+select is(
+  public.transition_event_to_paying((select (result ->> 'event_id')::uuid from event_result), 'loading_expenses'),
+  'paying',
+  'owner can close expenses and enter paying'
+);
+select is((select status from public.events where id = (select (result ->> 'event_id')::uuid from event_result)), 'paying', 'paying status is persisted');
+select is((select summary from public.audit_log where action = 'event_ready_to_pay'), 'Marcó que es hora de pagar.', 'status transition is audited');
+reset role;
+set local request.jwt.claim.sub = '20000000-0000-0000-0000-000000000003';
+set local role authenticated;
+select throws_ok(
+  $$ select public.leave_event((select (result ->> 'event_id')::uuid from event_result)) $$,
+  '22023', 'Membership can only be changed while loading expenses.', 'membership changes freeze while paying'
+);
+reset role;
+set local request.jwt.claim.sub = '20000000-0000-0000-0000-000000000001';
+set local role authenticated;
+select is(
+  public.reopen_event_expenses((select (result ->> 'event_id')::uuid from event_result), 'paying'),
+  'loading_expenses',
+  'owner can reopen expenses'
+);
+select is((select summary from public.audit_log where action = 'event_reopened'), 'Reabrió la carga de gastos.', 'reopening is audited');
+create temporary table empty_event as select public.create_event('Vacío') as result;
+select throws_ok(
+  $$ select public.transition_event_to_paying((select (result ->> 'event_id')::uuid from empty_event), 'loading_expenses') $$,
+  '22023', 'Add at least one expense before settling.', 'empty events cannot enter paying'
+);
+reset role;
+set local request.jwt.claim.sub = '20000000-0000-0000-0000-000000000003';
+set local role authenticated;
+select throws_ok(
+  $$ select public.transition_event_to_paying((select (result ->> 'event_id')::uuid from event_result), 'loading_expenses') $$,
+  '42501', 'Administrator permission required.', 'members cannot change settlement status'
+);
+reset role;
+
 select * from finish();
 rollback;

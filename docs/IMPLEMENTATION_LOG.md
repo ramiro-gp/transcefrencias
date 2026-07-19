@@ -18,6 +18,18 @@ Este archivo registra qué se hizo realmente. No incluir planes como si ya estuv
 
 ## Registros
 
+### 2026-07-19 — Hora de pagar de Etapa 6
+
+- **Versión:** `0.6.0` al cerrar la revisión técnica y humana aprobada.
+- **Objetivo:** cerrar la carga de gastos, explicar balances y proponer transferencias exactas sin adelantar movimientos.
+- **Implementado:** estado `paying` auditado, reapertura administrativa, bloqueos de datos económicos/membresías serializados con la transición, cálculo canónico después de fusiones, Worker con presupuesto protegido y cancelación, vistas personal/general y detalle por gasto. La revisión técnica ajustó la jerarquía visual de carga y saldos, y agregó pruebas directas de Worker y vistas.
+- **Áreas/archivos:** migración de estados, RLS/RPC, consultas de eventos/gastos, `features/settlement`, páginas de evento y gasto, pruebas y documentación.
+- **Base de datos:** migración local versionada; no hay balances ni transferencias persistidos.
+- **Verificaciones:** `pnpm supabase:reset`, pgTAP (136 pruebas), integración Supabase local, `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, Vitest (139 pruebas), cobertura, `pnpm build`, `pnpm audit --prod` y `git diff --check` correctos. La cobertura de `features/settlement` es 73,86 % statements, 68,96 % branches, 78,57 % functions y 74,07 % lines.
+- **Decisiones:** ADR-025; se preservan ADR-015, ADR-022 y ADR-024.
+- **Pendientes/riesgos:** movimientos, saldado y archivado siguen fuera de esta etapa. Vite mantiene un aviso de chunk inicial superior a 500 kB, pendiente de una optimización posterior medida.
+- **Commit:** creado durante el cierre de Etapa 6.
+
 ### 2026-07-19 — Corrección multipagador e importes exactos
 
 - **Versión:** `0.5.0`.

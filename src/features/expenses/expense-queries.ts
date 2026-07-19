@@ -25,6 +25,7 @@ export function useExpenses(eventId: string | undefined) {
     queryKey: eventId ? expensesKey(eventId) : ['expenses', 'missing'],
     queryFn: () => listExpenses(supabase, eventId!),
     enabled: Boolean(eventId),
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -34,5 +35,6 @@ export function useExpense(eventId: string | undefined, expenseId: string | unde
       eventId && expenseId ? expenseKey(eventId, expenseId) : ['expense', 'missing'],
     queryFn: () => getExpense(supabase, eventId!, expenseId!),
     enabled: Boolean(eventId && expenseId),
+    refetchOnWindowFocus: true,
   })
 }
