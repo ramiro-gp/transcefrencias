@@ -14,8 +14,8 @@ Sumar todo lo gastado y dividirlo entre todos es injusto cuando no todas las per
 
 Para cada gasto, transcefrencias registra:
 
-- quién pagó;
-- cuánto pagó;
+- quiénes pagaron;
+- cuánto aportó cada persona;
 - qué se compró;
 - quiénes participaron de ese gasto.
 

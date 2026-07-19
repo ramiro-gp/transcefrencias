@@ -54,10 +54,16 @@ export function calculateOriginalBalances({
       breakdown.shares.map((share) => [share.participantId, share.amount] as const),
     )
 
-    for (const participantId of new Set([expense.payerId, ...expense.consumerIds])) {
+    const paidByParticipant = new Map(
+      expense.payers.map((payer) => [payer.participantId, payer.amount] as const),
+    )
+    for (const participantId of new Set([
+      ...paidByParticipant.keys(),
+      ...expense.consumerIds,
+    ])) {
       const balance = balances.get(participantId)
       if (balance === undefined) throw new Error('Validated participant is missing')
-      const paidAmount = participantId === expense.payerId ? expense.amount : 0
+      const paidAmount = paidByParticipant.get(participantId) ?? 0
       const consumedAmount = shares.get(participantId) ?? 0
       const netAmount = safeAdd(paidAmount, -consumedAmount)
 

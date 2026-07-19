@@ -6,6 +6,21 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-19
+
+### Changed
+
+- Los gastos admiten múltiples pagadores y aportes en pesos enteros exactos; los botones rápidos no restringen importes persistidos.
+
+### Added
+
+- CRUD de gastos con categorías cerradas, selector táctil de importe, consumidores por gasto, eliminación lógica y rutas de alta/edición.
+- Auditoría de gastos con snapshots estructurados mínimos y control de concurrencia por revisión.
+
+### Security
+
+- RLS, grants de solo lectura y RPC transaccionales para crear, editar y eliminar gastos según membresía, rol, autoría y estado del evento.
+
 ## [0.4.0] - 2026-07-18
 
 ### Added
@@ -60,7 +75,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 ### Changed
 
 - Corregido el ejemplo financiero A-F para que todos los gastos sean múltiplos de $500.
-- Aclarada la granularidad: solo los gastos son múltiplos de $500; cuotas, movimientos y sugerencias usan pesos enteros exactos.
+- Aclarada entonces la granularidad de gastos en pasos de $500; esta regla histórica fue reemplazada en `Unreleased` por ADR-024.
 
 ## [0.1.0] - 2026-07-16
 

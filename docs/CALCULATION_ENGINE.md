@@ -10,11 +10,11 @@ El motor debe ser puro, determinista, testeable y trabajar únicamente con enter
 
 Para cada gasto:
 
-- `amount`: importe entero, positivo y múltiplo de 500.
-- `payerId`: participante que adelantó el dinero.
+- `amount`: importe entero, positivo y seguro.
+- `payers`: uno o más participantes y sus aportes, cuya suma coincide con el total.
 - `participantIds`: consumidores que comparten el gasto.
 
-El pagador recibe crédito por el total abonado. Cada consumidor asume una cuota del gasto. El pagador solo asume cuota si también está incluido entre los consumidores.
+Cada pagador recibe crédito por su aporte. Cada consumidor asume una cuota del gasto. Un pagador solo asume cuota si también está incluido entre los consumidores.
 
 ## Reparto sin centavos
 
@@ -25,7 +25,7 @@ Sea un gasto de importe `A` entre `N` consumidores:
 3. Cada consumidor recibe inicialmente `base`.
 4. Se agrega $1 a exactamente `remainder` consumidores.
 
-Aunque los gastos ingresados sean múltiplos de $500, las cuotas individuales pueden ser cualquier cantidad entera de pesos. No redondear cada cuota a $500 porque alteraría el total real del gasto.
+Gastos, aportes y cuotas usan pesos enteros exactos. No redondear cuotas porque alteraría el total real del gasto.
 
 La asignación del remanente debe ser determinista. Ordenar por un identificador estable antes de distribuirlo, nunca por el orden accidental de la interfaz.
 
@@ -41,7 +41,7 @@ Convención recomendada:
 
 Por cada gasto:
 
-1. `balance[payerId] += amount`
+1. Para cada pagador: `balance[participantId] += aporte`
 2. Para cada consumidor: `balance[id] -= share[id]`
 
 Invariantes:
@@ -124,7 +124,7 @@ Los pagos/cobros opcionales son accesos de UX a un único movimiento del libro c
 - Conservar el cálculo bruto derivado de gastos.
 - Un movimiento puede ser informado por el origen, el destino, un administrador o un coadministrador. Se registra el autor y la acción desde la que fue informado.
 - Un movimiento puede unir cualquier origen deudor pendiente con cualquier destino acreedor pendiente; no está limitado a una pareja propuesta por el optimizador.
-- Su importe puede ser cualquier entero positivo de pesos. La restricción de múltiplos de $500 corresponde exclusivamente al importe de los gastos.
+- Su importe puede ser cualquier entero positivo de pesos, igual que gastos y aportes.
 - Su importe no puede superar `min(deuda pendiente total del origen, crédito pendiente total del destino)` al crearlo o editarlo.
 - Después de crear, editar, anular o aplicar un movimiento, recalcular las transferencias optimizadas sobre los balances pendientes.
 - Advertir sobre un posible duplicado cuando coincidan evento, origen, destino e importe dentro de una ventana temporal configurable. La advertencia no combina, confirma, bloquea ni elimina movimientos automáticamente.
@@ -186,7 +186,7 @@ La medición demuestra que 14 o 15 participantes no determinan por sí solos el 
 
 ## Suite mínima de tests
 
-- Un gasto, un pagador y todos consumidores.
+- Un gasto, uno o varios pagadores y todos consumidores.
 - Pagador fuera de consumidores.
 - Varios gastos con subconjuntos superpuestos.
 - Personas que llegan o se van entre gastos.

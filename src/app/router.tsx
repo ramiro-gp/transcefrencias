@@ -84,6 +84,20 @@ export const router = createBrowserRouter([
                 Component,
               })),
           },
+          {
+            path: 'eventos/:eventId/gastos/nuevo',
+            lazy: () =>
+              import('../pages/expense-form-page').then(
+                ({ ExpenseFormPage: Component }) => ({ Component }),
+              ),
+          },
+          {
+            path: 'eventos/:eventId/gastos/:expenseId/editar',
+            lazy: () =>
+              import('../pages/expense-form-page').then(
+                ({ ExpenseFormPage: Component }) => ({ Component }),
+              ),
+          },
         ],
       },
       {

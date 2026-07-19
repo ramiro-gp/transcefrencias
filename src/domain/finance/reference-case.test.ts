@@ -10,24 +10,39 @@ describe('A-F reference case', () => {
         {
           id: 'afternoon-a',
           amount: 1000,
-          payerId: 'a',
+          payers: [{ participantId: 'a', amount: 1000 }],
           consumerIds: ['a', 'b', 'c', 'd'],
         },
         {
           id: 'afternoon-c',
           amount: 2000,
-          payerId: 'c',
+          payers: [{ participantId: 'c', amount: 2000 }],
           consumerIds: ['a', 'b', 'c', 'd'],
         },
         {
           id: 'afternoon-d',
           amount: 3000,
-          payerId: 'd',
+          payers: [{ participantId: 'd', amount: 3000 }],
           consumerIds: ['a', 'b', 'c', 'd'],
         },
-        { id: 'night-a', amount: 500, payerId: 'a', consumerIds: ['a', 'b', 'e', 'f'] },
-        { id: 'night-b', amount: 500, payerId: 'b', consumerIds: ['a', 'b', 'e', 'f'] },
-        { id: 'night-e', amount: 4000, payerId: 'e', consumerIds: ['a', 'b', 'e', 'f'] },
+        {
+          id: 'night-a',
+          amount: 500,
+          payers: [{ participantId: 'a', amount: 500 }],
+          consumerIds: ['a', 'b', 'e', 'f'],
+        },
+        {
+          id: 'night-b',
+          amount: 500,
+          payers: [{ participantId: 'b', amount: 500 }],
+          consumerIds: ['a', 'b', 'e', 'f'],
+        },
+        {
+          id: 'night-e',
+          amount: 4000,
+          payers: [{ participantId: 'e', amount: 4000 }],
+          consumerIds: ['a', 'b', 'e', 'f'],
+        },
       ],
     })
 

@@ -41,11 +41,11 @@ Antes de cerrar una tarea deben pasar, como mínimo, `lint`, `typecheck`, `test`
 ## Reglas de producto innegociables
 
 - Un evento contiene todos los gastos de una juntada. No crear un evento por categoría o subconjunto de personas.
-- Cada gasto tiene un único pagador y su propio conjunto de participantes.
+- Cada gasto tiene uno o más pagadores con aportes explícitos y su propio conjunto de participantes.
 - El pagador puede no haber consumido y, por lo tanto, puede quedar fuera de los participantes del gasto.
 - Al crear un gasto, seleccionar por defecto a todos los participantes activos; permitir destildarlos antes de guardar y editarlos después.
 - Una persona incorporada más tarde no se agrega retroactivamente a gastos existentes.
-- Importes enteros, positivos y múltiplos de $500. Sin centavos.
+- Importes enteros, positivos y seguros. Sin centavos; los botones rápidos usan pasos de $500.
 - Moneda única visible como `$`; no agregar selector ni sigla de moneda.
 - Los movimientos informados son opcionales y admiten importes parciales. Son transferencias entre un origen y un destino, no confirmaciones obligatorias de una sugerencia del optimizador.
 - No exigir confirmación del receptor para que la app sea utilizable.
@@ -61,7 +61,7 @@ Las reglas completas están en `docs/PRODUCT_SPEC.md` y `docs/CALCULATION_ENGINE
 - Toda tabla expuesta debe tener RLS habilitado y políticas verificadas.
 - No confiar en permisos ocultos solamente desde la UI.
 - Validar entradas en cliente y servidor/base de datos.
-- Los enlaces de invitación deben usar identificadores no predecibles y no almacenar su secreto en texto plano.
+- Los enlaces de invitación deben usar identificadores no predecibles. Para el enlace estable aprobado, el identificador solo se almacena en `private.event_invitations`, sin lectura PostgREST, y solo el propietario lo recupera mediante una RPC autorizada; ver ADR-020.
 - Nunca usar la `service_role` de Supabase en el frontend.
 - Revisar que un usuario solo pueda acceder a eventos de los que es miembro o cuya invitación válida abrió para unirse.
 

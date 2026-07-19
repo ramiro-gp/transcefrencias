@@ -2,11 +2,15 @@ export type ParticipantId = string
 export type ExpenseId = string
 export type MovementId = string
 export type Money = number
+export interface ExpensePayer {
+  readonly participantId: ParticipantId
+  readonly amount: Money
+}
 
 export interface Expense {
   readonly id: ExpenseId
   readonly amount: Money
-  readonly payerId: ParticipantId
+  readonly payers: readonly ExpensePayer[]
   readonly consumerIds: readonly ParticipantId[]
 }
 
@@ -25,7 +29,7 @@ export interface ExpenseContribution {
 export interface ExpenseBreakdown {
   readonly expenseId: ExpenseId
   readonly amount: Money
-  readonly payerId: ParticipantId
+  readonly payers: readonly ExpensePayer[]
   readonly shares: readonly ExpenseShare[]
 }
 

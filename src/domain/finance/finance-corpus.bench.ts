@@ -148,10 +148,18 @@ function randomExpenses(
     const minimumConsumers =
       profile === 'dense-overlap' ? Math.ceil(activeIds.length / 2) : 1
     const consumerCount = random.integer(minimumConsumers, activeIds.length)
+    const amount = random.integer(1, 80) * 500
+    const payerCount = random.integer(1, Math.min(activeIds.length, amount / 500))
+    const payerIds = random.shuffle(activeIds).slice(0, payerCount)
+    const baseAmount = Math.floor(amount / payerCount / 500) * 500
+    const remainder = amount - baseAmount * payerCount
     return {
       id: `expense-${index.toString().padStart(2, '0')}`,
-      amount: random.integer(1, 80) * 500,
-      payerId: random.pick(activeIds),
+      amount,
+      payers: payerIds.map((participantId, payerIndex) => ({
+        participantId,
+        amount: baseAmount + (payerIndex === 0 ? remainder : 0),
+      })),
       consumerIds: random.shuffle(activeIds).slice(0, consumerCount),
     }
   })
@@ -169,10 +177,11 @@ function componentExpenses(
     const creditor = ids[index + 1]
     if (debtor === undefined || creditor === undefined)
       throw new Error('Pair is incomplete')
+    const amount = (repeated ? 4 : random.integer(1, 40)) * 500
     expenses.push({
       id: `expense-${expenseIndex}`,
-      amount: (repeated ? 4 : random.integer(1, 40)) * 500,
-      payerId: creditor,
+      amount,
+      payers: [{ participantId: creditor, amount }],
       consumerIds: [debtor],
     })
     expenseIndex += 1
@@ -188,13 +197,13 @@ function componentExpenses(
     expenses.push({
       id: `expense-${expenseIndex}`,
       amount: 1500,
-      payerId: first,
+      payers: [{ participantId: first, amount: 1500 }],
       consumerIds: [last],
     })
     expenses.push({
       id: `expense-${expenseIndex + 1}`,
       amount: 1000,
-      payerId: last,
+      payers: [{ participantId: last, amount: 1000 }],
       consumerIds: [second],
     })
   }
@@ -234,7 +243,9 @@ function createRealisticCase(participantCount: 14 | 15, index: number): CorpusCa
     participantCount,
     expenseCount: expenses.length,
     payerConsumesCount: expenses.filter((expense) =>
-      expense.consumerIds.includes(expense.payerId),
+      expense.payers.some(({ participantId }) =>
+        expense.consumerIds.includes(participantId),
+      ),
     ).length,
     balances,
     properZeroSubsetCount: countProperZeroSubsets(balances),

@@ -66,6 +66,9 @@ Estado al 2026-07-18: completada en `0.4.0` y validada localmente con migracione
 - Selector de importe sin teclado por defecto.
 - Selección inicial de todos los participantes.
 - Resumen por gasto y validaciones.
+- Múltiples pagadores con aportes explícitos y resumen personal derivado, sin transferencias sugeridas.
+
+Estado al 2026-07-19: completada en `0.5.0` con gastos auditables, múltiples pagadores, importes enteros exactos, RLS/RPC, consolidación de identidades fusionadas y pruebas locales. Liquidación, transiciones de estado y movimientos siguen fuera de esta etapa.
 
 ## Etapa 6 — Hora de pagar
 

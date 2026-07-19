@@ -20,7 +20,7 @@ Registrar aquí decisiones que tengan alternativas relevantes o consecuencias fu
 
 ## ADR-003 — Dinero entero y entrada redondeada a $500
 
-- **Estado:** aceptada.
+- **Estado:** reemplazada por ADR-024.
 - **Fecha:** 2026-07-16.
 - **Decisión:** los gastos se ingresan como enteros múltiplos de $500; las cuotas internas se reparten en pesos enteros exactos.
 - **Motivo:** carga rápida y adecuada al uso informal actual en Argentina, sin perder consistencia contable.
@@ -84,7 +84,7 @@ Registrar aquí decisiones que tengan alternativas relevantes o consecuencias fu
 
 ## ADR-011 — Granularidad monetaria interna y movimientos
 
-- **Estado:** aceptada.
+- **Estado:** reemplazada parcialmente por ADR-024; se conserva el uso de enteros seguros.
 - **Fecha:** 2026-07-17.
 - **Decisión:** solo los gastos ingresados deben ser múltiplos de $500. Cuotas, balances, movimientos y transferencias sugeridas admiten cualquier entero positivo de pesos.
 - **Motivo:** los remanentes de una división exacta pueden producir cuotas no divisibles por $500 y deben poder saldarse sin perder ni inventar dinero.
@@ -169,3 +169,26 @@ Registrar aquí decisiones que tengan alternativas relevantes o consecuencias fu
 - **Decisión:** ADMIN y COADMIN pueden expulsar cuentas activas que no sean el owner ni ellas mismas. La expulsión desactiva membresía y persona, reduce el rol a miembro, bloquea la RPC de unión y audita actor y persona. Solo ADMIN puede permitir un reingreso posterior, que sigue requiriendo invitación y `UNIRME`.
 - **Motivo:** permitir moderación compartida sin borrar historia ni convertir una invitación permanente en un bypass de seguridad.
 - **Consecuencia:** las cuentas expulsadas aparecen solo para ADMIN en una sección administrativa discreta; salida voluntaria y expulsión quedan diferenciadas en historial.
+
+## ADR-022 — Gastos auditables con identidad histórica
+
+- **Estado:** reemplazada parcialmente por ADR-024 en pagadores e importes; se conserva auditoría e identidad histórica.
+- **Fecha:** 2026-07-19.
+- **Decisión:** los gastos guardan concepto, categoría cerrada, importe, pagador, consumidores, creador, revisión y eliminación lógica; no incluyen notas. La edición conserva las referencias históricas inactivas ya presentes, pero no permite agregarlas. Las fusiones nunca reescriben gastos y la Etapa 6 agregará el resultado a la identidad canónica después del reparto.
+- **Motivo:** mantener una carga breve, preservar trazabilidad económica y evitar que una desactivación o vinculación altere hechos anteriores.
+- **Consecuencia:** las mutaciones se realizan por RPC transaccional, con revisión optimista y snapshots antes/después limitados a datos del gasto; un conflicto requiere recargar, sin sobrescribir cambios ajenos.
+
+## ADR-023 — Identificador recuperable de invitación estable
+
+- **Estado:** aceptada.
+- **Fecha:** 2026-07-19.
+- **Decisión:** el identificador aleatorio del enlace estable se conserva exclusivamente en `private.event_invitations` para que el ADMIN pueda recuperarlo por RPC autorizada. No existe lectura directa por PostgREST ni se modifica funcionalmente esta decisión durante Etapa 5.
+- **Motivo:** un grupo personal debe poder recuperar su enlace estable sin infraestructura adicional.
+- **Consecuencia:** complementa ADR-020 y aclara la excepción documental al requisito general de no exponer secretos: el identificador no es accesible a clientes salvo el owner mediante la operación controlada.
+
+## ADR-024 — Aportes múltiples e importes exactos
+
+- **Estado:** aceptada; reemplaza parcialmente ADR-003 y ADR-022.
+- **Fecha:** 2026-07-19.
+- **Decisión:** un gasto tiene uno o más pagadores con aportes explícitos que suman exactamente el total. Gastos y aportes admiten cualquier peso entero positivo seguro; los pasos de $500/$1K/$5K son solo atajos de interfaz.
+- **Consecuencia:** cuotas y aportes distribuyen remanentes en pesos enteros deterministas; no hay redondeo automático de entrada manual.

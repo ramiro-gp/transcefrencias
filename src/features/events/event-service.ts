@@ -40,6 +40,7 @@ export interface Participant {
   readonly profileId: string | null
   readonly displayName: string
   readonly active: boolean
+  readonly mergedIntoId: string | null
 }
 
 export interface AuditEntry {
@@ -137,7 +138,7 @@ export async function getEventDetail(
       .not('rejoin_blocked_at', 'is', null),
     client
       .from('participants')
-      .select('id, profile_id, display_name, active')
+      .select('id, profile_id, display_name, active, merged_into_id')
       .eq('event_id', eventId)
       .order('created_at'),
     client
@@ -166,6 +167,7 @@ export async function getEventDetail(
     profileId: participant.profile_id,
     displayName: participant.display_name,
     active: participant.active,
+    mergedIntoId: participant.merged_into_id,
   }))
   return {
     id: event.id,

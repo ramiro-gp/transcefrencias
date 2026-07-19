@@ -4,7 +4,14 @@ describe('calculateSettlement', () => {
   it('composes original, pending and optimized results without losing explanations', () => {
     const result = calculateSettlement({
       participantIds: ['a', 'b'],
-      expenses: [{ id: 'expense', amount: 1000, payerId: 'a', consumerIds: ['b'] }],
+      expenses: [
+        {
+          id: 'expense',
+          amount: 1000,
+          payers: [{ participantId: 'a', amount: 1000 }],
+          consumerIds: ['b'],
+        },
+      ],
       movements: [{ id: 'partial', fromId: 'b', toId: 'a', amount: 400 }],
     })
 

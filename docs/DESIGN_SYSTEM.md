@@ -45,10 +45,10 @@ Los valores definitivos deben superar contraste WCAG AA.
 ## Selector de importe
 
 - Monto central grande.
-- Botones físicos visuales con incrementos y decrementos de $500 y $1.000.
+- Botones físicos visuales con incrementos y decrementos de $500, $1.000 y $5.000; son atajos, no restringen el importe.
 - Feedback inmediato y opción de mantener pulsado solo si se implementa sin producir saltos accidentales.
 - Mostrar `10k` como formato compacto, pero exponer `$10.000` a lector de pantalla y en contexto de confirmación.
-- Al editar manualmente, mostrar cómo se redondeará antes de guardar.
+- Al editar manualmente, conservar el peso entero exacto antes de guardar.
 
 ## Selección de participantes
 

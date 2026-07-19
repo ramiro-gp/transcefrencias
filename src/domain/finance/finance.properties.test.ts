@@ -66,7 +66,7 @@ describe('finance properties', () => {
           const expense = {
             id: 'expense',
             amount: units * 500,
-            payerId: 'a',
+            payers: [{ participantId: 'a', amount: units * 500 }],
             consumerIds: consumers,
           }
           const forward = splitExpense(expense)
@@ -88,7 +88,10 @@ describe('finance properties', () => {
   it('keeps original balances zero-sum and independent of source order', () => {
     const expenseArbitrary = fc.record({
       units: fc.integer({ min: 1, max: 1000 }),
-      payerId: fc.constantFrom(...participantIds),
+      payerIds: fc.uniqueArray(fc.constantFrom(...participantIds), {
+        minLength: 1,
+        maxLength: participantIds.length,
+      }),
       consumerIds: fc.uniqueArray(fc.constantFrom(...participantIds), {
         minLength: 1,
         maxLength: participantIds.length,
@@ -100,7 +103,17 @@ describe('finance properties', () => {
         const expenses: Expense[] = generatedExpenses.map((expense, index) => ({
           id: `expense-${index.toString().padStart(2, '0')}`,
           amount: expense.units * 500,
-          payerId: expense.payerId,
+          payers: expense.payerIds
+            .map((participantId, payerIndex) => {
+              const payerCount = expense.payerIds.length
+              const baseUnits = Math.floor(expense.units / payerCount)
+              const remainderUnits = expense.units % payerCount
+              return {
+                participantId,
+                amount: (baseUnits + (payerIndex < remainderUnits ? 1 : 0)) * 500,
+              }
+            })
+            .filter(({ amount }) => amount > 0),
           consumerIds: expense.consumerIds,
         }))
         const forward = calculateOriginalBalances({ participantIds, expenses })
@@ -108,6 +121,7 @@ describe('finance properties', () => {
           participantIds: [...participantIds].reverse(),
           expenses: [...expenses].reverse().map((expense) => ({
             ...expense,
+            payers: [...expense.payers].reverse(),
             consumerIds: [...expense.consumerIds].reverse(),
           })),
         })
@@ -116,6 +130,57 @@ describe('finance properties', () => {
         expect(forward.balances.reduce((sum, balance) => sum + balance.amount, 0)).toBe(0)
       }),
       { numRuns: 200 },
+    )
+  })
+
+  it('preserves multipayer contributions and balances independently of payer order', () => {
+    const payerIdsArbitrary = fc.uniqueArray(fc.constantFrom(...participantIds), {
+      minLength: 1,
+      maxLength: participantIds.length,
+    })
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 1, max: 10_000 }),
+        payerIdsArbitrary,
+        fc.uniqueArray(fc.constantFrom(...participantIds), {
+          minLength: 1,
+          maxLength: participantIds.length,
+        }),
+        (units, payerIds, consumerIds) => {
+          const payerCount = Math.min(units, payerIds.length)
+          const selectedPayerIds = payerIds.slice(0, payerCount)
+          const baseUnits = Math.floor(units / payerCount)
+          const remainderUnits = units % payerCount
+          const payers = selectedPayerIds.map((participantId, index) => ({
+            participantId,
+            amount: (baseUnits + (index < remainderUnits ? 1 : 0)) * 500,
+          }))
+          const expense: Expense = {
+            id: 'multipayer',
+            amount: units * 500,
+            payers,
+            consumerIds,
+          }
+
+          const forward = calculateOriginalBalances({
+            participantIds,
+            expenses: [expense],
+          })
+          const reversed = calculateOriginalBalances({
+            participantIds: [...participantIds].reverse(),
+            expenses: [{ ...expense, payers: [...payers].reverse() }],
+          })
+
+          expect(forward).toEqual(reversed)
+          expect(
+            forward.balances.reduce((sum, balance) => sum + balance.paidAmount, 0),
+          ).toBe(expense.amount)
+          expect(forward.balances.reduce((sum, balance) => sum + balance.amount, 0)).toBe(
+            0,
+          )
+        },
+      ),
+      { numRuns: 300 },
     )
   })
 

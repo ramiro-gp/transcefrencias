@@ -1,29 +1,39 @@
 import { calculateOriginalBalances } from './calculate-balances'
 
 describe('calculateOriginalBalances', () => {
-  it('credits a payer outside the consumer set', () => {
+  it('credits multiple payers, including one outside the consumer set', () => {
     const result = calculateOriginalBalances({
       participantIds: ['c', 'a', 'b', 'uninvolved'],
-      expenses: [{ id: 'expense', amount: 1500, payerId: 'a', consumerIds: ['b', 'c'] }],
+      expenses: [
+        {
+          id: 'expense',
+          amount: 1500,
+          payers: [
+            { participantId: 'a', amount: 1000 },
+            { participantId: 'b', amount: 500 },
+          ],
+          consumerIds: ['b', 'c'],
+        },
+      ],
     })
 
     expect(result.balances).toEqual([
       {
         participantId: 'a',
-        amount: 1500,
-        paidAmount: 1500,
+        amount: 1000,
+        paidAmount: 1000,
         consumedAmount: 0,
         contributions: [
-          { expenseId: 'expense', paidAmount: 1500, consumedAmount: 0, netAmount: 1500 },
+          { expenseId: 'expense', paidAmount: 1000, consumedAmount: 0, netAmount: 1000 },
         ],
       },
       {
         participantId: 'b',
-        amount: -750,
-        paidAmount: 0,
+        amount: -250,
+        paidAmount: 500,
         consumedAmount: 750,
         contributions: [
-          { expenseId: 'expense', paidAmount: 0, consumedAmount: 750, netAmount: -750 },
+          { expenseId: 'expense', paidAmount: 500, consumedAmount: 750, netAmount: -250 },
         ],
       },
       {
@@ -48,11 +58,24 @@ describe('calculateOriginalBalances', () => {
   it('recalculates edits and deletions from the supplied source', () => {
     const original = {
       participantIds: ['a', 'b'],
-      expenses: [{ id: 'expense', amount: 1000, payerId: 'a', consumerIds: ['a', 'b'] }],
+      expenses: [
+        {
+          id: 'expense',
+          amount: 1000,
+          payers: [{ participantId: 'a', amount: 1000 }],
+          consumerIds: ['a', 'b'],
+        },
+      ],
     } as const
     const edited = {
       ...original,
-      expenses: [{ ...original.expenses[0], amount: 2000 }],
+      expenses: [
+        {
+          ...original.expenses[0],
+          amount: 2000,
+          payers: [{ participantId: 'a', amount: 2000 }],
+        },
+      ],
     }
 
     expect(
@@ -72,7 +95,14 @@ describe('calculateOriginalBalances', () => {
     expect(() =>
       calculateOriginalBalances({
         participantIds: ['a'],
-        expenses: [{ id: 'expense', amount: 500, payerId: 'a', consumerIds: ['b'] }],
+        expenses: [
+          {
+            id: 'expense',
+            amount: 500,
+            payers: [{ participantId: 'a', amount: 500 }],
+            consumerIds: ['b'],
+          },
+        ],
       }),
     ).toThrowError(expect.objectContaining({ code: 'unknown-participant' }))
 
@@ -80,8 +110,18 @@ describe('calculateOriginalBalances', () => {
       calculateOriginalBalances({
         participantIds: ['a'],
         expenses: [
-          { id: 'expense', amount: 500, payerId: 'a', consumerIds: ['a'] },
-          { id: 'expense', amount: 1000, payerId: 'a', consumerIds: ['a'] },
+          {
+            id: 'expense',
+            amount: 500,
+            payers: [{ participantId: 'a', amount: 500 }],
+            consumerIds: ['a'],
+          },
+          {
+            id: 'expense',
+            amount: 1000,
+            payers: [{ participantId: 'a', amount: 1000 }],
+            consumerIds: ['a'],
+          },
         ],
       }),
     ).toThrowError(expect.objectContaining({ code: 'duplicate-expense' }))

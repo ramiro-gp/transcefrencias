@@ -6,7 +6,7 @@ describe('splitExpense', () => {
     const result = splitExpense({
       id: 'expense-1',
       amount: 1000,
-      payerId: 'payer',
+      payers: [{ participantId: 'payer', amount: 1000 }],
       consumerIds: ['c', 'a', 'b'],
     })
 
@@ -17,11 +17,11 @@ describe('splitExpense', () => {
     ])
   })
 
-  it('does not require the payer to be a consumer', () => {
+  it('does not require payers to be consumers', () => {
     const result = splitExpense({
       id: 'expense-1',
       amount: 1500,
-      payerId: 'a',
+      payers: [{ participantId: 'a', amount: 1500 }],
       consumerIds: ['b', 'c'],
     })
 
@@ -38,7 +38,7 @@ describe('splitExpense', () => {
         splitExpense({
           id: 'expense-1',
           amount,
-          payerId: 'a',
+          payers: [{ participantId: 'a', amount: 500 }],
           consumerIds: ['a'],
         }),
       ).toThrow(FinanceDomainError)
@@ -47,15 +47,43 @@ describe('splitExpense', () => {
 
   it('rejects empty and duplicate consumers', () => {
     expect(() =>
-      splitExpense({ id: 'empty', amount: 500, payerId: 'a', consumerIds: [] }),
+      splitExpense({
+        id: 'empty',
+        amount: 500,
+        payers: [{ participantId: 'a', amount: 500 }],
+        consumerIds: [],
+      }),
     ).toThrowError(expect.objectContaining({ code: 'empty-consumers' }))
     expect(() =>
       splitExpense({
         id: 'duplicates',
         amount: 500,
-        payerId: 'a',
+        payers: [{ participantId: 'a', amount: 500 }],
         consumerIds: ['a', 'a'],
       }),
     ).toThrowError(expect.objectContaining({ code: 'duplicate-consumer' }))
+  })
+
+  it.each([
+    { payers: [], code: 'empty-payers' },
+    {
+      payers: [
+        { participantId: 'a', amount: 500 },
+        { participantId: 'a', amount: 500 },
+      ],
+      code: 'duplicate-payer',
+    },
+    { payers: [{ participantId: 'a', amount: 0 }], code: 'invalid-payer-amount' },
+    {
+      payers: [
+        { participantId: 'a', amount: 500 },
+        { participantId: 'b', amount: 500 },
+      ],
+      code: 'payer-total-mismatch',
+    },
+  ] as const)('rejects invalid payer contributions', ({ payers, code }) => {
+    expect(() =>
+      splitExpense({ id: 'invalid-payers', amount: 500, payers, consumerIds: ['a'] }),
+    ).toThrowError(expect.objectContaining({ code }))
   })
 })

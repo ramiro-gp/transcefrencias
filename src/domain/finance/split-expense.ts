@@ -20,7 +20,9 @@ export function splitExpense(expense: Expense): ExpenseBreakdown {
   return {
     expenseId: expense.id,
     amount: expense.amount,
-    payerId: expense.payerId,
+    payers: [...expense.payers].sort((left, right) =>
+      compareIds(left.participantId, right.participantId),
+    ),
     shares,
   }
 }

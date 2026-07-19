@@ -62,18 +62,47 @@ export function validateExpense(
   participantIds?: ReadonlySet<ParticipantId>,
 ): void {
   assertValidId(expense.id, 'expense')
-  if (
-    !Number.isSafeInteger(expense.amount) ||
-    expense.amount <= 0 ||
-    expense.amount % 500 !== 0
-  ) {
+  if (!Number.isSafeInteger(expense.amount) || expense.amount <= 0) {
     throw new FinanceDomainError(
       'invalid-expense-amount',
-      'Expense amount must be a positive safe integer divisible by 500',
+      'Expense amount must be a positive safe integer',
       { expenseId: expense.id, amount: expense.amount },
     )
   }
-  assertValidId(expense.payerId, 'participant')
+  if (expense.payers.length === 0) {
+    throw new FinanceDomainError('empty-payers', 'Expense must have at least one payer', {
+      expenseId: expense.id,
+    })
+  }
+  const payers = new Set<ParticipantId>()
+  let paidTotal = 0
+  for (const payer of expense.payers) {
+    assertValidId(payer.participantId, 'participant')
+    if (payers.has(payer.participantId)) {
+      throw new FinanceDomainError('duplicate-payer', 'Expense payers must be unique', {
+        expenseId: expense.id,
+        participantId: payer.participantId,
+      })
+    }
+    if (!Number.isSafeInteger(payer.amount) || payer.amount <= 0) {
+      throw new FinanceDomainError(
+        'invalid-payer-amount',
+        'Payer amount must be a positive safe integer',
+        { expenseId: expense.id, participantId: payer.participantId },
+      )
+    }
+    payers.add(payer.participantId)
+    paidTotal = safeAdd(paidTotal, payer.amount)
+  }
+  if (paidTotal !== expense.amount) {
+    throw new FinanceDomainError(
+      'payer-total-mismatch',
+      'Payer amounts must equal expense amount',
+      {
+        expenseId: expense.id,
+      },
+    )
+  }
   if (expense.consumerIds.length === 0) {
     throw new FinanceDomainError(
       'empty-consumers',
@@ -101,7 +130,7 @@ export function validateExpense(
   }
 
   if (participantIds !== undefined) {
-    for (const participantId of [expense.payerId, ...expense.consumerIds]) {
+    for (const participantId of [...payers, ...expense.consumerIds]) {
       if (!participantIds.has(participantId)) {
         throw new FinanceDomainError(
           'unknown-participant',

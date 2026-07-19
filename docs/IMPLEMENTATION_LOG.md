@@ -18,6 +18,25 @@ Este archivo registra qué se hizo realmente. No incluir planes como si ya estuv
 
 ## Registros
 
+### 2026-07-19 — Corrección multipagador e importes exactos
+
+- **Versión:** `0.5.0`.
+- **Implementado:** tabla de aportes, migraciones correctivas, motor multipagador, importes enteros exactos y consolidación derivada de identidades fusionadas.
+- **Base de datos:** sin balances persistidos; RLS y RPC se conservan.
+- **Verificaciones:** reset y tipos Supabase locales, pgTAP (128 pruebas), integración Supabase JS, formato, lint, TypeScript, Vitest (132 pruebas), cobertura, build, auditoría de dependencias y `git diff --check` correctos. Cobertura global: 66,64 % statements, 56,10 % branches, 54,87 % functions y 67,86 % lines; `features/expenses`: 80,64 %, 66,19 %, 79,76 % y 83,54 %.
+
+### 2026-07-19 — Gastos de Etapa 5
+
+- **Versión:** `0.5.0` al cerrar la revisión humana aprobada.
+- **Objetivo:** cargar gastos por subconjunto de personas sin adelantar liquidación ni movimientos.
+- **Implementado inicialmente:** CRUD con concepto, categorías cerradas, pagador independiente y consumidores; esa primera granularidad de $500 y pagador único fue reemplazada durante la misma etapa por la corrección multipagador de ADR-024. Se conservan rutas, eliminación lógica, revisión optimista y snapshots auditables.
+- **Áreas/archivos:** migración de gastos, RLS/RPC, tipos Supabase, `features/expenses`, rutas, página de evento, estilos y pgTAP.
+- **Base de datos:** `20260719090000_create_expenses.sql` crea `expenses`, `expense_participants`, índices, integridad por evento, auditoría de gasto y operaciones transaccionales. No hay balances persistidos ni cambios funcionales de invitaciones.
+- **Verificaciones:** `pnpm supabase:reset`, generación local de tipos, pgTAP (125 pruebas), `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (99 pruebas), `pnpm test:coverage`, `pnpm build` y `git diff --check` correctos.
+- **Decisiones:** ADR-022 y ADR-023; ADR-003 queda reemplazada por ADR-024 y se preservan ADR-002 y ADR-020.
+- **Pendientes/riesgos:** liquidación, transiciones de estado y movimientos pertenecen a etapas posteriores. La revisión humana debe validar ergonomía del selector en celular.
+- **Commit:** creado al cerrar Etapa 5.
+
 ### 2026-07-18 — Eventos y participantes de Etapa 4
 
 - **Versión:** `0.4.0`.

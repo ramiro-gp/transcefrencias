@@ -91,9 +91,8 @@ Campos mínimos:
 - concepto obligatorio;
 - categoría;
 - importe;
-- un pagador;
+- uno o más pagadores con aporte explícito;
 - uno o más participantes consumidores;
-- notas opcionales;
 - creador y marcas temporales.
 
 Categorías iniciales cerradas:
@@ -106,8 +105,8 @@ Categorías iniciales cerradas:
 
 ### Reglas
 
-- El pagador y los consumidores son conceptos independientes.
-- El pagador puede quedar destildado si no consumió.
+- Los pagadores y consumidores son conceptos independientes; sus aportes suman exactamente el total.
+- Un pagador puede quedar destildado si no consumió.
 - Al iniciar la carga se seleccionan todos los participantes activos actuales.
 - El usuario puede destildar participantes antes de guardar.
 - Una incorporación posterior no altera gastos anteriores.
@@ -126,10 +125,8 @@ Objetivo: cargar el monto habitual sin abrir el teclado del celular.
   - `+ $500`
 - El orden visual final debe priorizar ergonomía y evitar errores; probarlo en celular.
 - Pulsar el monto permite abrir teclado numérico como alternativa.
-- Al salir de la edición manual, redondear al múltiplo de $500 más cercano.
-- Ejemplos: `$1.600 → $1.500`; `$1.900 → $2.000`.
-- Definir explícitamente el empate: `$1.750 → $2.000` (mitad hacia arriba).
-- Solo aceptar enteros positivos y múltiplos de $500 al guardar.
+- La edición manual conserva el peso entero exacto; `10k` equivale a `$10.000`.
+- Solo aceptar enteros positivos y seguros al guardar.
 - No usar inputs numéricos nativos con flechas pequeñas.
 
 ## 7. Liquidación
@@ -148,7 +145,7 @@ Objetivo: cargar el monto habitual sin abrir el teclado del celular.
 - El origen, el destino, el propietario o un coadministrador pueden crearlo. Registrar autor y acción de origen.
 - Admitir pagos parciales.
 - Un movimiento puede conectar cualquier participante deudor pendiente con cualquier participante acreedor pendiente, aunque esa pareja no aparezca en la recomendación actual.
-- El importe de un movimiento es un entero positivo de pesos; no necesita ser múltiplo de $500 porque cuotas y saldos internos pueden contener pesos de remanente.
+- El importe de un movimiento es un entero positivo de pesos, igual que gastos, aportes, cuotas y saldos internos.
 - Al crear o editar, el importe no puede superar `min(deuda pendiente total del origen, crédito pendiente total del destino)`.
 - Después de crear, editar o anular, recalcular recomendaciones sobre los balances pendientes.
 - El creador puede editar o anular el movimiento. El propietario y coadministradores pueden editar o anular cualquiera. La contraparte no puede hacerlo si no fue creadora.

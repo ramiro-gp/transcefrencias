@@ -1,4 +1,8 @@
 export type FinanceErrorCode =
+  | 'empty-payers'
+  | 'duplicate-payer'
+  | 'invalid-payer-amount'
+  | 'payer-total-mismatch'
   | 'duplicate-participant'
   | 'invalid-participant-id'
   | 'unknown-participant'

@@ -35,7 +35,9 @@ export type Database = {
           actor_display_name: string
           actor_id: string | null
           created_at: string
+          details: Json | null
           event_id: string
+          expense_id: string | null
           id: string
           summary: string
         }
@@ -44,7 +46,9 @@ export type Database = {
           actor_display_name: string
           actor_id?: string | null
           created_at?: string
+          details?: Json | null
           event_id: string
+          expense_id?: string | null
           id?: string
           summary: string
         }
@@ -53,7 +57,9 @@ export type Database = {
           actor_display_name?: string
           actor_id?: string | null
           created_at?: string
+          details?: Json | null
           event_id?: string
+          expense_id?: string | null
           id?: string
           summary?: string
         }
@@ -70,6 +76,13 @@ export type Database = {
             columns: ['event_id']
             isOneToOne: false
             referencedRelation: 'events'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'audit_log_expense_id_fkey'
+            columns: ['expense_id']
+            isOneToOne: false
+            referencedRelation: 'expenses'
             referencedColumns: ['id']
           },
         ]
@@ -150,6 +163,139 @@ export type Database = {
             columns: ['owner_id']
             isOneToOne: false
             referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      expense_participants: {
+        Row: {
+          event_id: string
+          expense_id: string
+          participant_id: string
+        }
+        Insert: {
+          event_id: string
+          expense_id: string
+          participant_id: string
+        }
+        Update: {
+          event_id?: string
+          expense_id?: string
+          participant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'expense_participants_expense_fk'
+            columns: ['event_id', 'expense_id']
+            isOneToOne: false
+            referencedRelation: 'expenses'
+            referencedColumns: ['event_id', 'id']
+          },
+          {
+            foreignKeyName: 'expense_participants_participant_fk'
+            columns: ['event_id', 'participant_id']
+            isOneToOne: false
+            referencedRelation: 'participants'
+            referencedColumns: ['event_id', 'id']
+          },
+        ]
+      }
+      expense_payers: {
+        Row: {
+          amount: number
+          event_id: string
+          expense_id: string
+          participant_id: string
+        }
+        Insert: {
+          amount: number
+          event_id: string
+          expense_id: string
+          participant_id: string
+        }
+        Update: {
+          amount?: number
+          event_id?: string
+          expense_id?: string
+          participant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'expense_payers_event_id_expense_id_fkey'
+            columns: ['event_id', 'expense_id']
+            isOneToOne: false
+            referencedRelation: 'expenses'
+            referencedColumns: ['event_id', 'id']
+          },
+          {
+            foreignKeyName: 'expense_payers_event_id_participant_id_fkey'
+            columns: ['event_id', 'participant_id']
+            isOneToOne: false
+            referencedRelation: 'participants'
+            referencedColumns: ['event_id', 'id']
+          },
+        ]
+      }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          concept: string
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          deleted_by: string | null
+          event_id: string
+          id: string
+          revision: number
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          concept: string
+          created_at?: string
+          created_by: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          event_id: string
+          id?: string
+          revision?: number
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          concept?: string
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          event_id?: string
+          id?: string
+          revision?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'expenses_created_by_fkey'
+            columns: ['created_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'expenses_deleted_by_fkey'
+            columns: ['deleted_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'expenses_event_id_fkey'
+            columns: ['event_id']
+            isOneToOne: false
+            referencedRelation: 'events'
             referencedColumns: ['id']
           },
         ]
@@ -243,12 +389,28 @@ export type Database = {
         Returns: undefined
       }
       create_event: { Args: { event_name: string }; Returns: Json }
+      create_expense: {
+        Args: {
+          expense_amount: number
+          expense_category: string
+          expense_concept: string
+          expense_participant_ids: string[]
+          expense_payer_amounts: number[]
+          expense_payer_ids: string[]
+          target_event_id: string
+        }
+        Returns: string
+      }
       create_manual_participant: {
         Args: { participant_name: string; target_event_id: string }
         Returns: string
       }
       deactivate_participant: {
         Args: { target_participant_id: string }
+        Returns: undefined
+      }
+      delete_expense: {
+        Args: { expected_revision: number; target_expense_id: string }
         Returns: undefined
       }
       expel_event_member: {
@@ -284,6 +446,19 @@ export type Database = {
           target_profile_id: string
         }
         Returns: undefined
+      }
+      update_expense: {
+        Args: {
+          expected_revision: number
+          expense_amount: number
+          expense_category: string
+          expense_concept: string
+          expense_participant_ids: string[]
+          expense_payer_amounts: number[]
+          expense_payer_ids: string[]
+          target_expense_id: string
+        }
+        Returns: number
       }
     }
     Enums: {

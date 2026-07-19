@@ -30,6 +30,7 @@ El motor financiero implementado en `src/domain/finance/` no importa React, DOM 
 - `participants`
 - `expenses`
 - `expense_participants`
+- `expense_payers`
 - `settlement_movements`
 - `audit_log`
 
