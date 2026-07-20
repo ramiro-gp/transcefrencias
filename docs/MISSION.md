@@ -19,13 +19,13 @@ Para cada gasto, transcefrencias registra:
 - qué se compró;
 - quiénes participaron de ese gasto.
 
-Después calcula el saldo neto de cada persona y propone transferencias optimizadas para saldar el evento con pocas operaciones.
+Después calcula el saldo neto de cada persona y propone transferencias optimizadas para resolver las cuentas del evento con pocas operaciones.
 
 ## Principios
 
 1. **Justicia por gasto:** cada persona paga solo lo que compartió.
 2. **Carga rápida:** la operación habitual debe requerir pocos toques desde el celular.
-3. **Confianza entre amigos:** los registros de pago son opcionales, no burocráticos.
+3. **Confianza entre amigos:** la aplicación recomienda transferencias y el grupo coordina su realización fuera de ella.
 4. **Transparencia:** todo saldo debe poder explicarse a partir de gastos concretos.
 5. **Historial confiable:** editar o eliminar no debe destruir la trazabilidad.
 6. **Sin costo operativo:** usar planes gratuitos de GitHub, Supabase y Vercel dentro de sus límites.
@@ -38,6 +38,7 @@ Grupos pequeños de amigos o familiares. El caso de referencia tiene 14 integran
 ## Fuera del MVP
 
 - Pagos online o integración bancaria.
+- Registro, confirmación o seguimiento de transferencias realizadas.
 - Múltiples monedas.
 - Centavos.
 - División por porcentajes, cantidades o importes personalizados.

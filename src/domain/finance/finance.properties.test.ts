@@ -1,9 +1,8 @@
 import fc from 'fast-check'
-import { applyMovements } from './apply-movements'
 import { calculateOriginalBalances } from './calculate-balances'
 import { optimizeTransfers, optimizeTransfersByBacktracking } from './optimize-transfers'
 import { splitExpense } from './split-expense'
-import type { Balance, Expense, SettlementMovement, SuggestedTransfer } from './types'
+import type { Balance, Expense, SuggestedTransfer } from './types'
 import { solveTransfersByZeroSumPartitions } from './zero-sum-partition'
 
 const participantIds = ['a', 'b', 'c', 'd'] as const
@@ -181,47 +180,6 @@ describe('finance properties', () => {
         },
       ),
       { numRuns: 300 },
-    )
-  })
-
-  it('applies historical movements and warnings independently of input order', () => {
-    const movementArbitrary = fc
-      .record({
-        fromId: fc.constantFrom(...participantIds),
-        toId: fc.constantFrom(...participantIds),
-        amount: fc.integer({ min: 1, max: 3000 }),
-      })
-      .filter(({ fromId, toId }) => fromId !== toId)
-
-    fc.assert(
-      fc.property(
-        fc.array(movementArbitrary, { maxLength: 20 }),
-        (generatedMovements) => {
-          const movements: SettlementMovement[] = generatedMovements.map(
-            (movement, index) => ({
-              id: `movement-${index.toString().padStart(2, '0')}`,
-              ...movement,
-            }),
-          )
-          const originalBalances = [
-            { participantId: 'a', amount: -1000 },
-            { participantId: 'b', amount: -500 },
-            { participantId: 'c', amount: 800 },
-            { participantId: 'd', amount: 700 },
-          ]
-          const forward = applyMovements({ originalBalances, movements })
-          const reversed = applyMovements({
-            originalBalances: [...originalBalances].reverse(),
-            movements: [...movements].reverse(),
-          })
-
-          expect(forward).toEqual(reversed)
-          expect(forward.balances.reduce((sum, balance) => sum + balance.amount, 0)).toBe(
-            0,
-          )
-        },
-      ),
-      { numRuns: 200 },
     )
   })
 

@@ -6,6 +6,25 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-07-20
+
+### Added
+
+- Archivado y restauración auditados desde `Cargando gastos` y `Hora de pagar`, con estado anterior preservado, listado separado y detalle financiero de solo lectura.
+- Revisión optimista uniforme para cerrar, reabrir, archivar y restaurar; los miembros activos conservan lectura del archivo.
+
+### Changed
+
+- Etapa 7 cubre archivado, restauración auditada y solo lectura; Etapa 8 concentra QA y producción directa a `1.0.0`.
+- Retirados los contratos y tests aislados de registro de transferencias que no llegaron a integrarse con la aplicación ni persistirse; se conservan el cálculo original y la optimización usados.
+- La documentación histórica mantiene las referencias verdaderas al alcance anterior y ADR-026 deja explícito que ya no define el producto vigente.
+- La revisión manual prioriza `CREAR EVENTO`, renombra la acción de cálculo a `DIVIDIR GASTOS` con una explicación breve y mueve `ARCHIVAR EVENTO` al final del detalle activo.
+
+### Security
+
+- Las RPC y triggers bloquean toda mutación relacionada con un evento archivado; el enlace estable informa el archivo sin permitir `UNIRME`.
+- `join_event` rechaza membresías ya activas y protege al propietario permanente; revisiones nulas, cero u obsoletas se rechazan explícitamente.
+
 ## [0.6.0] - 2026-07-19
 
 ### Added

@@ -442,6 +442,10 @@ h1 {
   margin-top: 2rem;
 }
 
+.archived-events-action {
+  margin-top: 1rem;
+}
+
 .event-section {
   margin-top: 2.5rem;
   padding-top: 1.25rem;
@@ -452,6 +456,18 @@ h1 {
   margin: 0 0 1rem;
   font-size: 0.875rem;
   letter-spacing: 0.04em;
+}
+
+.event-primary-action,
+.archive-event-section {
+  width: 100%;
+}
+
+.event-action-copy {
+  margin: 0 0 1rem;
+  color: #a1a1aa;
+  font-size: 0.875rem;
+  line-height: 1.6;
 }
 
 .financial-title {

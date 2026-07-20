@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Navigate, useNavigate, useParams } from 'react-router'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../app/auth-context'
@@ -8,14 +8,16 @@ import {
   storeInvitationSecret,
 } from '../features/events/invitation-storage'
 import { getInvitationPreview, joinInvitation } from '../features/events/event-service'
+import { eventDetailKey, eventListKey } from '../features/events/event-queries'
 import { supabase } from '../lib/supabase/client'
 
 const secretPattern = /^[0-9a-f]{64}$/
 
 export function InvitationPage() {
   const { invitationId } = useParams()
-  const { status } = useAuth()
+  const { status, user } = useAuth()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [secret] = useState<string | null>(() => {
     if (!invitationId) return null
     const fragment = window.location.hash.slice(1)
@@ -37,11 +39,19 @@ export function InvitationPage() {
     queryKey: ['invitation', invitationId],
     queryFn: () => getInvitationPreview(supabase, invitationId!, secret!),
     enabled: status === 'authenticated' && Boolean(invitationId && secret),
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   })
   const join = useMutation({
     mutationFn: () => joinInvitation(supabase, invitationId!, secret!),
-    onSuccess: (eventId) => {
+    onSuccess: async (eventId) => {
       clearInvitationSecret(invitationId!)
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: eventDetailKey(eventId) }),
+        ...(user
+          ? [queryClient.invalidateQueries({ queryKey: eventListKey(user.id) })]
+          : []),
+      ])
       void navigate(`/eventos/${eventId}`, { replace: true })
     },
   })
@@ -86,6 +96,30 @@ export function InvitationPage() {
     )
   const invitation = preview.data
   if (!invitation) return null
+  if (invitation.status === 'archived')
+    return (
+      <section className="page-state" role="status">
+        <p className="eyebrow">EVENTO ARCHIVADO</p>
+        <h1>{invitation.name}</h1>
+        <p>Este evento está en modo solo lectura.</p>
+        {invitation.alreadyMember && (
+          <button
+            className="button button-primary"
+            onClick={() => void navigate(`/eventos/${invitation.eventId}`)}
+          >
+            ABRIR EVENTO
+          </button>
+        )}
+      </section>
+    )
+  if (invitation.status === 'paying' && !invitation.alreadyMember)
+    return (
+      <section className="page-state" role="status">
+        <p className="eyebrow">HORA DE PAGAR</p>
+        <h1>{invitation.name}</h1>
+        <p>El evento debe volver a CARGANDO GASTOS antes de que puedas unirte.</p>
+      </section>
+    )
   if (invitation.alreadyMember)
     return (
       <section className="page-state">

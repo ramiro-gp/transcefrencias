@@ -78,6 +78,13 @@ export const router = createBrowserRouter([
               })),
           },
           {
+            path: 'eventos/archivados',
+            lazy: () =>
+              import('../pages/archived-events-page').then(
+                ({ ArchivedEventsPage: Component }) => ({ Component }),
+              ),
+          },
+          {
             path: 'eventos/:eventId',
             lazy: () =>
               import('../pages/event-page').then(({ EventPage: Component }) => ({

@@ -100,6 +100,12 @@ export function HomePage() {
           {create.isPending ? 'CREANDO…' : 'CREAR EVENTO'}
         </button>
       </form>
+      <Link
+        className="button button-wide archived-events-action"
+        to="/eventos/archivados"
+      >
+        VER EVENTOS ARCHIVADOS
+      </Link>
     </section>
   )
 }

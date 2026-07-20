@@ -29,9 +29,9 @@ reset role;
 
 select ok((select (result ->> 'token') ~ '^[0-9a-f]{64}$' from event_result), 'event creates a 256-bit invitation identifier');
 select is((select result ->> 'token' from owner_invitation), (select result ->> 'token' from event_result), 'owner can recover the stable invitation from another session');
-select is((select name from public.events), 'Sábado', 'event name is normalized');
-select is((select role from public.event_members), 'owner', 'creator is owner');
-select is((select count(*) from public.participants), 1::bigint, 'creator receives an economic participant');
+select is((select name from public.events where id = (select (result ->> 'event_id')::uuid from event_result)), 'Sábado', 'event name is normalized');
+select is((select role from public.event_members where event_id = (select (result ->> 'event_id')::uuid from event_result) and profile_id = '20000000-0000-0000-0000-000000000001'), 'owner', 'creator is owner');
+select is((select count(*) from public.participants where event_id = (select (result ->> 'event_id')::uuid from event_result)), 1::bigint, 'creator receives an economic participant');
 
 set local request.jwt.claim.sub = '20000000-0000-0000-0000-000000000003';
 set local role authenticated;
@@ -225,7 +225,7 @@ select public.create_expense(
   array[(select id from public.participants where event_id = (select (result ->> 'event_id')::uuid from event_result) and profile_id = '20000000-0000-0000-0000-000000000001')]
 );
 select is(
-  public.transition_event_to_paying((select (result ->> 'event_id')::uuid from event_result), 'loading_expenses'),
+  public.transition_event_to_paying((select (result ->> 'event_id')::uuid from event_result), (select revision from public.events where id = (select (result ->> 'event_id')::uuid from event_result))) ->> 'status',
   'paying',
   'owner can close expenses and enter paying'
 );
@@ -242,21 +242,21 @@ reset role;
 set local request.jwt.claim.sub = '20000000-0000-0000-0000-000000000001';
 set local role authenticated;
 select is(
-  public.reopen_event_expenses((select (result ->> 'event_id')::uuid from event_result), 'paying'),
+  public.reopen_event_expenses((select (result ->> 'event_id')::uuid from event_result), (select revision from public.events where id = (select (result ->> 'event_id')::uuid from event_result))) ->> 'status',
   'loading_expenses',
   'owner can reopen expenses'
 );
 select is((select summary from public.audit_log where action = 'event_reopened'), 'Reabrió la carga de gastos.', 'reopening is audited');
 create temporary table empty_event as select public.create_event('Vacío') as result;
 select throws_ok(
-  $$ select public.transition_event_to_paying((select (result ->> 'event_id')::uuid from empty_event), 'loading_expenses') $$,
+  $$ select public.transition_event_to_paying((select (result ->> 'event_id')::uuid from empty_event), (select revision from public.events where id = (select (result ->> 'event_id')::uuid from empty_event))) $$,
   '22023', 'Add at least one expense before settling.', 'empty events cannot enter paying'
 );
 reset role;
 set local request.jwt.claim.sub = '20000000-0000-0000-0000-000000000003';
 set local role authenticated;
 select throws_ok(
-  $$ select public.transition_event_to_paying((select (result ->> 'event_id')::uuid from event_result), 'loading_expenses') $$,
+  $$ select public.transition_event_to_paying((select (result ->> 'event_id')::uuid from event_result), (select revision from public.events where id = (select (result ->> 'event_id')::uuid from event_result))) $$,
   '42501', 'Administrator permission required.', 'members cannot change settlement status'
 );
 reset role;

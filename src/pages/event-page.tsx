@@ -13,12 +13,16 @@ import {
   useEventDetail,
 } from '../features/events/event-queries'
 import {
+  archiveEvent,
   callEventRpc,
   createManualParticipant,
   getEventInvitation,
   reopenEventExpenses,
   renameEvent,
+  restoreEvent,
   transitionEventToPaying,
+  type EventDetail,
+  type EventTransition,
 } from '../features/events/event-service'
 import { eventNameSchema, participantNameSchema } from '../features/events/event-schemas'
 import { invitationUrl } from '../features/events/invitation-storage'
@@ -51,38 +55,71 @@ export function EventPage() {
     confirmLabel: string
     execute: () => Promise<void>
   } | null>(null)
-  const refresh = () =>
-    eventId
-      ? void queryClient.invalidateQueries({ queryKey: eventDetailKey(eventId) })
-      : undefined
+  const refresh = async () => {
+    if (!eventId) return
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: eventDetailKey(eventId) }),
+      ...(user
+        ? [queryClient.invalidateQueries({ queryKey: eventListKey(user.id) })]
+        : []),
+    ])
+  }
   const isAdmin = event.data?.role === 'owner' || event.data?.role === 'coadmin'
   const isOwner = event.data?.role === 'owner'
-  const isLoadingExpenses = event.data?.status !== 'paying'
+  const isArchived = event.data?.status === 'archived'
+  const isLoadingExpenses = event.data?.status === 'loading_expenses'
   const removeExpense = useMutation({
     mutationFn: (expense: Parameters<typeof deleteExpense>[1]) =>
       deleteExpense(supabase, expense),
-    onSuccess: () =>
-      eventId ? invalidateExpenseQueries(queryClient, eventId) : undefined,
+    onSuccess: async () => {
+      if (!eventId) return
+      await Promise.all([
+        invalidateExpenseQueries(queryClient, eventId),
+        ...(user
+          ? [queryClient.invalidateQueries({ queryKey: eventListKey(user.id) })]
+          : []),
+      ])
+    },
   })
   const rename = useMutation({
     mutationFn: (values: NameForm) => renameEvent(supabase, eventId!, values.name),
-    onSuccess: refresh,
+    onSuccess: () => refresh(),
   })
   const manual = useMutation({
     mutationFn: (values: NameForm) =>
       createManualParticipant(supabase, eventId!, values.name),
-    onSuccess: refresh,
+    onSuccess: () => refresh(),
   })
   const status = useMutation({
-    mutationFn: (next: 'paying' | 'loading_expenses') =>
-      next === 'paying'
-        ? transitionEventToPaying(supabase, eventId!)
-        : reopenEventExpenses(supabase, eventId!),
-    onSuccess: async () => {
-      if (!eventId) return
-      await invalidateExpenseQueries(queryClient, eventId)
-      if (user) await queryClient.invalidateQueries({ queryKey: eventListKey(user.id) })
+    mutationFn: (next: 'paying' | 'loading_expenses' | 'archived' | 'restore') => {
+      const revision = event.data!.revision
+      if (next === 'paying') return transitionEventToPaying(supabase, eventId!, revision)
+      if (next === 'loading_expenses')
+        return reopenEventExpenses(supabase, eventId!, revision)
+      if (next === 'archived') return archiveEvent(supabase, eventId!, revision)
+      return restoreEvent(supabase, eventId!, revision)
     },
+    onSuccess: async (transition: EventTransition) => {
+      if (!eventId) return
+      queryClient.setQueryData<EventDetail>(eventDetailKey(eventId), (current) =>
+        current
+          ? {
+              ...current,
+              status: transition.status,
+              revision: transition.revision,
+              archivedAt: transition.archivedAt,
+              archivedFromStatus: transition.archivedFromStatus,
+            }
+          : current,
+      )
+      await Promise.all([
+        invalidateExpenseQueries(queryClient, eventId),
+        ...(user
+          ? [queryClient.invalidateQueries({ queryKey: eventListKey(user.id) })]
+          : []),
+      ])
+    },
+    onError: () => refresh(),
   })
   const action = useMutation({
     mutationFn: ({
@@ -98,15 +135,12 @@ export function EventPage() {
         | 'allow_event_rejoin'
       args: Record<string, string | boolean>
     }) => callEventRpc(supabase, name, args),
-    onSuccess: () => {
-      refresh()
-      if (user) void queryClient.invalidateQueries({ queryKey: eventListKey(user.id) })
-    },
+    onSuccess: () => refresh(),
   })
   const invitation = useQuery({
     queryKey: ['event-invitation', eventId],
     queryFn: () => getEventInvitation(supabase, eventId!),
-    enabled: Boolean(eventId && isOwner),
+    enabled: Boolean(eventId && isOwner && !isArchived),
   })
   const copyInvitation = useMutation({
     mutationFn: async () => {
@@ -154,13 +188,23 @@ export function EventPage() {
   }
   return (
     <section className="event-detail" aria-labelledby="event-title">
-      <p className="eyebrow">{isLoadingExpenses ? 'CARGANDO GASTOS' : 'HORA DE PAGAR'}</p>
+      <p className="eyebrow">
+        {isArchived
+          ? 'EVENTO ARCHIVADO'
+          : isLoadingExpenses
+            ? 'CARGANDO GASTOS'
+            : 'HORA DE PAGAR'}
+      </p>
       <h1 id="event-title">{data.name}</h1>
-      {!isLoadingExpenses && (
+      {isArchived ? (
+        <p className="form-feedback" role="status">
+          Este evento está en modo solo lectura.
+        </p>
+      ) : !isLoadingExpenses ? (
         <p className="form-feedback" role="status">
           LOS GASTOS ESTÁN CERRADOS. REVISÁ LOS SALDOS Y LAS TRANSFERENCIAS SUGERIDAS.
         </p>
-      )}
+      ) : null}
       {balanceError && (
         <p className="form-feedback" role="alert">
           {balanceError}
@@ -206,22 +250,51 @@ export function EventPage() {
       )}
       {isAdmin && (
         <section className="event-section">
-          {isLoadingExpenses ? (
+          {isArchived ? (
             <button
               className="button button-primary button-wide"
               disabled={status.isPending}
               onClick={() =>
                 setConfirmation({
-                  title: 'HORA DE PAGAR',
-                  description:
-                    'Los gastos quedarán cerrados hasta que un ADMIN o COADMIN reabra la carga.',
-                  confirmLabel: 'TODOS LOS GASTOS FUERON CARGADOS',
-                  execute: () => status.mutateAsync('paying'),
+                  title: 'RESTAURAR EVENTO',
+                  description: `El evento volverá a ${
+                    data.archivedFromStatus === 'paying'
+                      ? 'HORA DE PAGAR'
+                      : 'CARGANDO GASTOS'
+                  }.`,
+                  confirmLabel: 'RESTAURAR',
+                  execute: async () => {
+                    await status.mutateAsync('restore')
+                  },
                 })
               }
             >
-              TODOS LOS GASTOS FUERON CARGADOS
+              RESTAURAR EVENTO
             </button>
+          ) : isLoadingExpenses ? (
+            <div className="event-primary-action">
+              <p className="event-action-copy">
+                Cuando hayan cargado todos los gastos, dividilos para calcular quién le
+                paga a quién.
+              </p>
+              <button
+                className="button button-primary button-wide"
+                disabled={status.isPending}
+                onClick={() =>
+                  setConfirmation({
+                    title: 'DIVIDIR GASTOS',
+                    description:
+                      'Se dividirán los gastos cargados y se mostrarán los saldos y quién le paga a quién. Podrás reabrir la carga si necesitás corregir algo.',
+                    confirmLabel: 'DIVIDIR GASTOS',
+                    execute: async () => {
+                      await status.mutateAsync('paying')
+                    },
+                  })
+                }
+              >
+                DIVIDIR GASTOS
+              </button>
+            </div>
           ) : (
             <button
               className="button"
@@ -232,7 +305,9 @@ export function EventPage() {
                   description:
                     'Podrás corregir gastos. Los balances y transferencias sugeridas pueden cambiar.',
                   confirmLabel: 'REABRIR CARGA',
-                  execute: () => status.mutateAsync('loading_expenses'),
+                  execute: async () => {
+                    await status.mutateAsync('loading_expenses')
+                  },
                 })
               }
             >
@@ -241,7 +316,7 @@ export function EventPage() {
           )}
         </section>
       )}
-      {!isLoadingExpenses && (
+      {(!isLoadingExpenses || isArchived) && (
         <SettlementView
           expenses={expenses.data}
           participants={data.participants}
@@ -324,7 +399,7 @@ export function EventPage() {
           )}
         </div>
       </section>
-      {isOwner && (
+      {isOwner && !isArchived && (
         <section className="event-section invitation-section">
           <h2>INVITACIÓN</h2>
           <p>Compartí este enlace con quienes quieras sumar al evento.</p>
@@ -360,7 +435,7 @@ export function EventPage() {
                     ? 'COADMIN'
                     : 'MIEMBRO'}
               </small>
-              {isOwner && member.profileId !== user?.id && (
+              {isOwner && !isArchived && member.profileId !== user?.id && (
                 <button
                   className="button button-small"
                   onClick={() => {
@@ -574,7 +649,7 @@ export function EventPage() {
           </button>
         </section>
       )}
-      {isAdmin && (
+      {isAdmin && !isArchived && (
         <form
           className="inline-form"
           onSubmit={(event) =>
@@ -604,6 +679,27 @@ export function EventPage() {
           ))}
         </ul>
       </section>
+      {isAdmin && !isArchived && (
+        <section className="event-section archive-event-section">
+          <button
+            className="button button-danger button-wide"
+            disabled={status.isPending}
+            onClick={() =>
+              setConfirmation({
+                title: 'ARCHIVAR EVENTO',
+                description:
+                  'El evento quedará en modo solo lectura y dejará de aparecer entre tus eventos activos. Podrás restaurarlo cuando quieras.',
+                confirmLabel: 'ARCHIVAR',
+                execute: async () => {
+                  await status.mutateAsync('archived')
+                },
+              })
+            }
+          >
+            ARCHIVAR EVENTO
+          </button>
+        </section>
+      )}
     </section>
   )
 }

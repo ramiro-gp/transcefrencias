@@ -35,7 +35,7 @@ export type Database = {
           actor_display_name: string
           actor_id: string | null
           created_at: string
-          details: Json | null
+          details: Json
           event_id: string
           expense_id: string | null
           id: string
@@ -46,7 +46,7 @@ export type Database = {
           actor_display_name: string
           actor_id?: string | null
           created_at?: string
-          details?: Json | null
+          details?: Json
           event_id: string
           expense_id?: string | null
           id?: string
@@ -57,7 +57,7 @@ export type Database = {
           actor_display_name?: string
           actor_id?: string | null
           created_at?: string
-          details?: Json | null
+          details?: Json
           event_id?: string
           expense_id?: string | null
           id?: string
@@ -131,29 +131,38 @@ export type Database = {
       }
       events: {
         Row: {
+          archived_at: string | null
+          archived_from_status: string | null
           created_at: string
           id: string
           last_activity_at: string
           name: string
           owner_id: string
+          revision: number
           status: string
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
+          archived_from_status?: string | null
           created_at?: string
           id?: string
           last_activity_at?: string
           name: string
           owner_id: string
+          revision?: number
           status?: string
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
+          archived_from_status?: string | null
           created_at?: string
           id?: string
           last_activity_at?: string
           name?: string
           owner_id?: string
+          revision?: number
           status?: string
           updated_at?: string
         }
@@ -388,6 +397,10 @@ export type Database = {
         Args: { target_event_id: string; target_profile_id: string }
         Returns: undefined
       }
+      archive_event: {
+        Args: { expected_revision: number; target_event_id: string }
+        Returns: Json
+      }
       create_event: { Args: { event_name: string }; Returns: Json }
       create_expense: {
         Args: {
@@ -436,8 +449,12 @@ export type Database = {
         Returns: undefined
       }
       reopen_event_expenses: {
-        Args: { expected_status: string; target_event_id: string }
-        Returns: string
+        Args: { expected_revision: number; target_event_id: string }
+        Returns: Json
+      }
+      restore_event: {
+        Args: { expected_revision: number; target_event_id: string }
+        Returns: Json
       }
       rotate_event_invitation: {
         Args: { revoke_only?: boolean; target_event_id: string }
@@ -452,8 +469,8 @@ export type Database = {
         Returns: undefined
       }
       transition_event_to_paying: {
-        Args: { expected_status: string; target_event_id: string }
-        Returns: string
+        Args: { expected_revision: number; target_event_id: string }
+        Returns: Json
       }
       update_expense: {
         Args: {

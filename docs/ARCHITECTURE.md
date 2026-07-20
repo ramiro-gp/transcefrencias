@@ -20,7 +20,7 @@ src/
 
 Dentro de cada feature, separar componentes, hooks, esquemas, servicios y tipos cuando sea útil. Evitar una estructura ceremonial con carpetas vacías.
 
-El motor financiero implementado en `src/domain/finance/` no importa React, DOM ni Supabase. Sus módulos separan reparto, balances originales, movimientos, optimización exacta híbrida, solver de particiones cero, backtracking, tipos, errores y validaciones. Los balances son resultados derivados y serializables, no estado persistido.
+El motor financiero implementado en `src/domain/finance/` no importa React, DOM ni Supabase. Sus módulos separan reparto, balances originales, consolidación de identidades, optimización exacta híbrida, solver de particiones cero, backtracking, tipos, errores y validaciones. Los balances son resultados derivados y serializables, no estado persistido.
 
 ## Entidades sugeridas
 
@@ -31,7 +31,6 @@ El motor financiero implementado en `src/domain/finance/` no importa React, DOM 
 - `expenses`
 - `expense_participants`
 - `expense_payers`
-- `settlement_movements`
 - `audit_log`
 
 ### Identidad de participante
@@ -54,7 +53,9 @@ No usar directamente `user_id` como única referencia en gastos.
 - Habilitar RLS en todas las tablas públicas.
 - Escribir políticas por rol y membresía, no depender del frontend.
 - Para operaciones complejas/auditadas, considerar funciones SQL `security definer` cuidadosamente limitadas y con `search_path` seguro.
-- No almacenar balances como fuente primaria. Derivarlos de gastos y movimientos; si luego se cachean, deben poder reconstruirse.
+- No almacenar balances como fuente primaria. Derivarlos de gastos; si luego se cachean, deben poder reconstruirse.
+
+`events.revision` serializa cambios concurrentes del evento. Las RPC mutantes bloquean primero la fila del evento y la revisión aumenta una sola vez por transacción. Cerrar, reabrir, archivar y restaurar comparan la revisión esperada; archivado conserva únicamente el estado operativo anterior porque el resto de los datos queda inmutable y los resultados financieros siguen siendo derivados.
 
 La infraestructura implementada inicia Supabase local mediante la CLI fijada y Docker. `public.profiles` referencia `auth.users`, no duplica email y se crea mediante un trigger transaccional en el schema no expuesto `private`. La función usa `security definer`, `search_path` vacío, nombres calificados y ejecución revocada; la metadata de Auth se trata solo como entrada de perfil validada.
 
@@ -79,7 +80,7 @@ Las páginas de Auth, perfil, inicio y 404 se resuelven con `route.lazy`; el she
 - Membresías: un usuario puede crear su unión válida; solo el propietario gestiona roles ajenos. Las inactivas se reservan para la administración y no se exponen a miembros comunes.
 - Participantes manuales: miembros crean; propietarios/coadministradores desactivan/vinculan.
 - Gastos: miembros crean; autor edita/elimina el propio durante carga; admins gestionan todos.
-- Movimientos: origen, destino y administradores pueden informar; el creador o administradores editan/anulan; miembros del evento consultan el estado necesario.
+- Archivado: miembros activos conservan lectura; ninguna RPC mutante ni escritura directa cliente modifica el evento o sus entidades relacionadas; propietario y coadministrador restauran mediante RPC transaccional.
 - Auditoría: insertada de forma controlada y no editable por usuarios comunes.
 
 Agregar tests o verificaciones reproducibles de RLS antes de producción.

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 export function ConfirmDialog({
   open,
@@ -18,6 +18,8 @@ export function ConfirmDialog({
   const dialogRef = useRef<HTMLDialogElement>(null)
   const cancelRef = useRef<HTMLButtonElement>(null)
   const triggerRef = useRef<HTMLElement | null>(null)
+  const titleId = useId()
+  const descriptionId = useId()
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
 
@@ -71,8 +73,8 @@ export function ConfirmDialog({
       ref={dialogRef}
       className="confirm-dialog"
       aria-modal="true"
-      aria-labelledby="confirm-dialog-title"
-      aria-describedby="confirm-dialog-description"
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
       onCancel={(event) => {
         event.preventDefault()
         close()
@@ -82,8 +84,8 @@ export function ConfirmDialog({
       }}
     >
       <section>
-        <h2 id="confirm-dialog-title">{title}</h2>
-        <p id="confirm-dialog-description">{description}</p>
+        <h2 id={titleId}>{title}</h2>
+        <p id={descriptionId}>{description}</p>
         {error && (
           <p className="form-feedback" role="alert">
             {error}

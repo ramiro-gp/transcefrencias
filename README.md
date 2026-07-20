@@ -2,7 +2,7 @@
 
 PWA mobile-first para dividir gastos de una juntada de manera justa: cada gasto se reparte solo entre quienes participaron y el resultado reduce transferencias innecesarias.
 
-La implementación actual incluye la base de la Etapa 1, el motor financiero aislado de la Etapa 2, autenticación/perfiles de la Etapa 3 y eventos/participantes de la Etapa 4 sobre Supabase local. Incluye invitación estable, roles, personas manuales, historial auditable, expulsión/reingreso y RLS probada. Los gastos y la UI financiera pertenecen a la siguiente etapa; Supabase remoto, SMTP remoto y Vercel permanecen sin configurar.
+La implementación llega a Etapa 7 en la versión `0.7.0`: base PWA, motor financiero puro, autenticación/perfiles, eventos/participantes, gastos multipagador, `Hora de pagar` con balances explicables y transferencias exactas, y archivado/restauración de solo lectura. Incluye invitación estable, roles, personas manuales, historial auditable, revisión concurrente y RLS probada localmente. Supabase remoto, SMTP remoto, QA final y Vercel permanecen pendientes para Etapa 8 y la preparación directa de `1.0.0`.
 
 ## Stack actual
 
@@ -52,7 +52,7 @@ pnpm build
 Los comandos de proyecto aceptan el número o nombre de la etapa y separan planificación, implementación, revisión y cierre:
 
 ```text
-/stage-plan 4 -> aprobación -> /stage-build 4 -> revisión humana -> /stage-review 4 -> /stage-close 4
+/stage-plan 7 -> aprobación -> /stage-build 7 -> revisión humana -> /stage-review 7 -> /stage-close 7
 ```
 
 `stage-close` se ejecuta únicamente después de aprobar la revisión humana; realiza las verificaciones finales, actualiza la versión de la entrega, crea un commit y hace push a la rama y upstream ya configurados. Los demás comandos no hacen commit ni push.
@@ -90,3 +90,4 @@ El cliente requiere `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`. Ambas son co
 - [Arquitectura](docs/ARCHITECTURE.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Decisiones](docs/DECISIONS.md)
+- [Registro de implementación](docs/IMPLEMENTATION_LOG.md)

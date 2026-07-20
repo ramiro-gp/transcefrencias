@@ -18,6 +18,18 @@ Este archivo registra qué se hizo realmente. No incluir planes como si ya estuv
 
 ## Registros
 
+### 2026-07-20 — Cierre de Etapa 7: archivado y restauración
+
+- **Versión:** `0.7.0`.
+- **Objetivo:** implementar archivado/restauración de solo lectura y retirar el prototipo de dominio que solo sostenía el alcance cancelado de registro de transferencias.
+- **Implementado:** estado `archived` desde carga o pago, restauración exacta, revisión uniforme, auditoría antes/después, bloqueo defensivo de todas las mutaciones relacionadas, protección permanente del owner y validación estricta de revisiones. El cliente separa activos/archivados, conserva la liquidación visible, oculta invitación y controles mutantes, bloquea `UNIRME` y ofrece los diálogos aprobados. La revisión manual priorizó `CREAR EVENTO`, reemplazó el copy de cierre por `DIVIDIR GASTOS` y ubicó `ARCHIVAR EVENTO` después del historial. Se eliminaron `apply-movements` y `calculate-settlement` con sus contratos/tests exclusivos, preservando reparto, balances, consolidación y optimización exacta.
+- **Áreas/archivos:** migración y pgTAP de ciclo de vida; tipos Supabase; servicios, consultas, rutas y páginas de eventos/gastos/invitación; motor financiero; AGENTS, README, changelog y documentación vigente.
+- **Base de datos:** `20260720100000_add_event_revisions_and_archiving.sql` agrega revisión y metadatos de archivo, migra cerrar/reabrir a revisión esperada, incorpora RPC transaccionales de archivo/restauración y refuerza RPC, triggers y grants existentes. Sin servicios ni datos remotos.
+- **Verificaciones:** `format:check`, `lint`, `typecheck`, 145 tests Vitest, cobertura (69,37 % statements; 92,11 % en dominio financiero), build PWA, benchmark financiero, reset local, tipos generados, 208 pruebas pgTAP, integración Supabase local, `pnpm audit` sin vulnerabilidades y `git diff --check` correctos.
+- **Decisiones:** ADR-026 reemplaza el alcance vigente de ADR-004, ADR-006 y ADR-012, y partes explícitas de ADR-007, ADR-008 y ADR-011, sin borrar sus cuerpos históricos.
+- **Pendientes/riesgos:** Supabase remoto, QA final, Vercel y producción pertenecen a Etapa 8. La versión `1.0.0` requiere QA y producción autorizadas.
+- **Commit:** cierre de Etapa 7 en la rama `main`.
+
 ### 2026-07-19 — Hora de pagar de Etapa 6
 
 - **Versión:** `0.6.0` al cerrar la revisión técnica y humana aprobada.

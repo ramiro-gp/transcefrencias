@@ -8,7 +8,7 @@ import {
 } from '../features/expenses/expense-queries'
 import { createExpense, updateExpense } from '../features/expenses/expense-service'
 import type { ExpenseFormValues } from '../features/expenses/expense-schemas'
-import { useEventDetail } from '../features/events/event-queries'
+import { eventListKey, useEventDetail } from '../features/events/event-queries'
 import { supabase } from '../lib/supabase/client'
 
 export function ExpenseFormPage() {
@@ -25,7 +25,12 @@ export function ExpenseFormPage() {
         ? updateExpense(supabase, expense.data!, values)
         : createExpense(supabase, eventId!, values),
     onSuccess: async () => {
-      await invalidateExpenseQueries(queryClient, eventId!, expenseId)
+      await Promise.all([
+        invalidateExpenseQueries(queryClient, eventId!, expenseId),
+        ...(user
+          ? [queryClient.invalidateQueries({ queryKey: eventListKey(user.id) })]
+          : []),
+      ])
       void navigate(`/eventos/${eventId}`)
     },
   })
@@ -43,6 +48,16 @@ export function ExpenseFormPage() {
         <p>
           {event.error?.message ?? expense.error?.message ?? 'No encontramos el gasto.'}
         </p>
+        <Link className="button" to={`/eventos/${eventId}`}>
+          VOLVER AL EVENTO
+        </Link>
+      </section>
+    )
+  if (event.data.status === 'archived')
+    return (
+      <section className="page-state" role="status">
+        <p className="eyebrow">EVENTO ARCHIVADO</p>
+        <p>Este evento está en modo solo lectura. No se pueden modificar gastos.</p>
         <Link className="button" to={`/eventos/${eventId}`}>
           VOLVER AL EVENTO
         </Link>

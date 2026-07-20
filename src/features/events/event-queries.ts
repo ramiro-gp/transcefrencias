@@ -1,14 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase/client'
-import { getEventDetail, listEvents } from './event-service'
+import { getEventDetail, listEvents, type EventListScope } from './event-service'
 
-export const eventListKey = (userId: string) => ['events', userId] as const
+export const eventListKey = (userId: string, scope?: EventListScope) =>
+  scope ? (['events', userId, scope] as const) : (['events', userId] as const)
 export const eventDetailKey = (eventId: string) => ['event', eventId] as const
 
-export function useEventList(userId: string | null) {
+export function useEventList(userId: string | null, scope: EventListScope = 'active') {
   return useQuery({
-    queryKey: userId ? eventListKey(userId) : ['events', 'anonymous'],
-    queryFn: () => listEvents(supabase, userId!),
+    queryKey: userId ? eventListKey(userId, scope) : ['events', 'anonymous', scope],
+    queryFn: () => listEvents(supabase, userId!, scope),
     enabled: userId !== null,
     refetchOnWindowFocus: true,
   })

@@ -40,7 +40,7 @@ La capacidad de bitmask no es un límite funcional del evento. `optimizeTransfer
 - Agotar un presupuesto devuelve `status: budget-exceeded` y nunca presenta greedy como exacto.
 - No existe fallback productivo.
 
-El umbral 15 no rechaza participantes ni eventos. Selecciona algoritmo según la cantidad de balances pendientes no nulos.
+El umbral 15 no rechaza participantes ni eventos. Selecciona algoritmo según la cantidad de balances no nulos.
 
 ## Corpus de 1.040 casos
 

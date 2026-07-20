@@ -47,10 +47,9 @@ Antes de cerrar una tarea deben pasar, como mínimo, `lint`, `typecheck`, `test`
 - Una persona incorporada más tarde no se agrega retroactivamente a gastos existentes.
 - Importes enteros, positivos y seguros. Sin centavos; los botones rápidos usan pasos de $500.
 - Moneda única visible como `$`; no agregar selector ni sigla de moneda.
-- Los movimientos informados son opcionales y admiten importes parciales. Son transferencias entre un origen y un destino, no confirmaciones obligatorias de una sugerencia del optimizador.
-- No exigir confirmación del receptor para que la app sea utilizable.
-- Conservar historial auditable de altas, ediciones, eliminaciones y movimientos.
-- Preservar históricos: no eliminar físicamente entidades relacionadas con gastos o pagos.
+- Las transferencias optimizadas son recomendaciones derivadas de los gastos; no se registran pagos ni cobros en la aplicación.
+- Conservar historial auditable de altas, ediciones, eliminaciones y cambios de estado.
+- Preservar históricos: no eliminar físicamente entidades relacionadas con gastos.
 
 Las reglas completas están en `docs/PRODUCT_SPEC.md` y `docs/CALCULATION_ENGINE.md`.
 
@@ -100,7 +99,7 @@ Las reglas completas están en `docs/PRODUCT_SPEC.md` y `docs/CALCULATION_ENGINE
 ## Versionado y documentación
 
 - Usar SemVer: `MAJOR.MINOR.PATCH`.
-- Durante desarrollo comenzar en `0.1.0`; `1.0.0` representa la primera versión estable.
+- La versión actual de desarrollo es `0.7.0`; `1.0.0` se prepara directamente en Etapa 8 solo después de QA y producción autorizada.
 - No aumentar versión por cada commit. Hacerlo por entrega funcional o corrección publicable.
 - Toda feature o cambio relevante debe actualizar:
   - `CHANGELOG.md`;

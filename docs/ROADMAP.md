@@ -32,7 +32,7 @@ Cada etapa debe aprobarse, implementarse, verificarse y documentarse antes de av
 
 No conectar Supabase hasta que este motor sea confiable.
 
-Estado al 2026-07-17: motor exacto híbrido implementado e instrumentado. El rango habitual de 14–15 completó 100 % exacto y no requiere fallback; Web Worker e integración permanecen para etapas posteriores.
+Estado al 2026-07-17: motor exacto híbrido implementado e instrumentado. El rango habitual de 14–15 completó 100 % exacto y no requiere fallback; Web Worker e integración permanecían para etapas posteriores. Los contratos experimentales de registro de transferencias incluidos entonces se retiraron del alcance por ADR-026; no llegaron a integrarse con producto ni persistencia.
 
 ## Etapa 3 — Supabase y autenticación
 
@@ -68,7 +68,7 @@ Estado al 2026-07-18: completada en `0.4.0` y validada localmente con migracione
 - Resumen por gasto y validaciones.
 - Múltiples pagadores con aportes explícitos y resumen personal derivado, sin transferencias sugeridas.
 
-Estado al 2026-07-19: completada en `0.5.0` con gastos auditables, múltiples pagadores, importes enteros exactos, RLS/RPC, consolidación de identidades fusionadas y pruebas locales. Liquidación, transiciones de estado y movimientos siguen fuera de esta etapa.
+Estado al 2026-07-19: completada en `0.5.0` con gastos auditables, múltiples pagadores, importes enteros exactos, RLS/RPC, consolidación de identidades fusionadas y pruebas locales. Liquidación y transiciones de estado quedaron fuera de esta etapa; el registro de transferencias previsto entonces fue retirado posteriormente por ADR-026.
 
 ## Etapa 6 — Hora de pagar
 
@@ -78,17 +78,18 @@ Estado al 2026-07-19: completada en `0.5.0` con gastos auditables, múltiples pa
 - Reapertura con advertencias.
 - Vista personal y vista general.
 
-Estado al 2026-07-19: completada en `0.6.0` con transición auditada y serializada, bloqueos por estado en RLS/RPC y UI, balances consolidados y explicables, transferencias exactas en Worker, presupuesto protegido, cancelación, vistas mobile-first y revisión humana aprobada. Movimientos, saldado y archivado permanecen fuera de esta etapa.
+Estado al 2026-07-19: completada en `0.6.0` con transición auditada y serializada, bloqueos por estado en RLS/RPC y UI, balances consolidados y explicables, transferencias exactas en Worker, presupuesto protegido, cancelación, vistas mobile-first y revisión humana aprobada. Archivado permanece fuera de esta etapa; el registro de transferencias y el estado final previstos entonces fueron retirados posteriormente por ADR-026.
 
-## Etapa 7 — Movimientos opcionales
+## Etapa 7 — Archivado y restauración
 
-- Informar pago o cobro.
-- Pagos parciales.
-- Detección/gestión de posibles duplicados.
-- Saldo original, movimientos y pendiente.
-- Marcado manual de evento saldado.
+- Archivar desde `Cargando gastos` u `Hora de pagar` mediante confirmación administrativa.
+- Conservar el estado anterior para una restauración administrativa exacta.
+- Mantener los eventos archivados en solo lectura.
+- Auditar archivado y restauración sin destruir gastos ni membresías históricas.
 
-## Etapa 8 — PWA, QA y producción
+Estado al 2026-07-20: completada en `0.7.0` con revisión uniforme, RPC transaccionales, solo lectura defensiva, listados separados, invitación bloqueada, retiro del dominio cancelado, ajustes UX aprobados y verificación local completa. Etapa 8 queda reservada para QA y producción autorizadas.
+
+## Etapa 8 — QA y producción directa a 1.0.0
 
 - Instalación Android/escritorio.
 - Actualización del service worker desde la app.
@@ -96,5 +97,6 @@ Estado al 2026-07-19: completada en `0.6.0` con transición auditada y serializa
 - Pruebas de RLS con varias cuentas.
 - Pruebas con un evento representativo de 14 personas.
 - Configuración Vercel y despliegue autorizado.
-- Preparación de `1.0.0` solo cuando el producto sea estable.
+- QA integral y preparación directa de `1.0.0` solo cuando el producto sea estable.
+- No publicar `0.8.0`: Etapa 7 cerró como `0.7.0` y Etapa 8 pasará directamente a `1.0.0` solo después de QA y producción aprobadas.
 - Revisar el chunk inicial que Vite informa por encima de 500 kB como optimización futura; no bloquea la Etapa 3.

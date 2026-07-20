@@ -1,5 +1,5 @@
 import { FinanceDomainError } from './errors'
-import type { Balance, Expense, ParticipantId, SettlementMovement } from './types'
+import type { Balance, Expense, ParticipantId } from './types'
 
 export function compareIds(left: string, right: string): number {
   if (left < right) return -1
@@ -7,18 +7,10 @@ export function compareIds(left: string, right: string): number {
   return 0
 }
 
-export function assertValidId(
-  id: string,
-  kind: 'participant' | 'expense' | 'movement',
-): void {
+export function assertValidId(id: string, kind: 'participant' | 'expense'): void {
   if (id.length > 0) return
 
-  const code =
-    kind === 'participant'
-      ? 'invalid-participant-id'
-      : kind === 'expense'
-        ? 'invalid-expense-id'
-        : 'invalid-movement-id'
+  const code = kind === 'participant' ? 'invalid-participant-id' : 'invalid-expense-id'
   throw new FinanceDomainError(code, `${kind} ID must not be empty`)
 }
 
@@ -136,40 +128,6 @@ export function validateExpense(
           'unknown-participant',
           'Expense references an unknown participant',
           { expenseId: expense.id, participantId },
-        )
-      }
-    }
-  }
-}
-
-export function validateMovement(
-  movement: SettlementMovement,
-  participantIds?: ReadonlySet<ParticipantId>,
-): void {
-  assertValidId(movement.id, 'movement')
-  assertValidId(movement.fromId, 'participant')
-  assertValidId(movement.toId, 'participant')
-  if (!Number.isSafeInteger(movement.amount) || movement.amount <= 0) {
-    throw new FinanceDomainError(
-      'invalid-movement-amount',
-      'Movement amount must be a positive safe integer',
-      { movementId: movement.id, amount: movement.amount },
-    )
-  }
-  if (movement.fromId === movement.toId) {
-    throw new FinanceDomainError(
-      'same-movement-endpoint',
-      'Movement endpoints must be different',
-      { movementId: movement.id, participantId: movement.fromId },
-    )
-  }
-  if (participantIds !== undefined) {
-    for (const participantId of [movement.fromId, movement.toId]) {
-      if (!participantIds.has(participantId)) {
-        throw new FinanceDomainError(
-          'unknown-participant',
-          'Movement references an unknown participant',
-          { movementId: movement.id, participantId },
         )
       }
     }

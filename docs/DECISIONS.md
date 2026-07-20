@@ -28,7 +28,7 @@ Registrar aquí decisiones que tengan alternativas relevantes o consecuencias fu
 
 ## ADR-004 — Movimientos de pago opcionales
 
-- **Estado:** aceptada.
+- **Estado:** reemplazada por ADR-026; se conserva como registro histórico del alcance inicial.
 - **Fecha:** 2026-07-16.
 - **Decisión:** informar pago/cobro es opcional y no requiere confirmación obligatoria.
 - **Motivo:** el producto está pensado para grupos pequeños con confianza y coordinación externa por WhatsApp.
@@ -44,7 +44,7 @@ Registrar aquí decisiones que tengan alternativas relevantes o consecuencias fu
 
 ## ADR-006 — Movimientos libres sobre saldos pendientes
 
-- **Estado:** aceptada.
+- **Estado:** reemplazada por ADR-026; se conserva como registro histórico del alcance inicial.
 - **Fecha:** 2026-07-16.
 - **Decisión:** las transferencias optimizadas son recomendaciones. Un movimiento puede conectar cualquier origen deudor pendiente con cualquier destino acreedor pendiente por hasta el mínimo entre deuda total pendiente del origen y crédito total pendiente del destino.
 - **Motivo:** el grupo puede acordar una transferencia distinta de la sugerida sin perder consistencia contable.
@@ -52,7 +52,7 @@ Registrar aquí decisiones que tengan alternativas relevantes o consecuencias fu
 
 ## ADR-007 — Roles, invitaciones y estados del evento
 
-- **Estado:** aceptada.
+- **Estado:** reemplazada parcialmente por ADR-026 en los estados del evento; se conservan roles e invitaciones.
 - **Fecha:** 2026-07-16.
 - **Decisión:** el creador es propietario permanente; solo él gestiona coadministradores e invitaciones. Los enlaces activos son reutilizables, revocables y no expiran. Los estados y restauración se limitan a las transiciones de la especificación.
 - **Motivo:** mantener un modelo de permisos simple y trazable para el MVP.
@@ -60,7 +60,7 @@ Registrar aquí decisiones que tengan alternativas relevantes o consecuencias fu
 
 ## ADR-008 — Fusión segura de participantes
 
-- **Estado:** aceptada.
+- **Estado:** reemplazada parcialmente por ADR-026 en su referencia a movimientos; se conserva la decisión de identidad y fusión.
 - **Fecha:** 2026-07-16.
 - **Decisión:** una cuenta solo puede tener un participante activo por evento. Si una cuenta ya está asociada, vincular una identidad manual requiere una fusión administrativa atómica que mantiene activa la identidad con cuenta.
 - **Motivo:** evitar duplicar personas, importes o participaciones sin perder historia.
@@ -84,7 +84,7 @@ Registrar aquí decisiones que tengan alternativas relevantes o consecuencias fu
 
 ## ADR-011 — Granularidad monetaria interna y movimientos
 
-- **Estado:** reemplazada parcialmente por ADR-024; se conserva el uso de enteros seguros.
+- **Estado:** reemplazada parcialmente por ADR-024 y ADR-026; se conserva el uso de enteros seguros.
 - **Fecha:** 2026-07-17.
 - **Decisión:** solo los gastos ingresados deben ser múltiplos de $500. Cuotas, balances, movimientos y transferencias sugeridas admiten cualquier entero positivo de pesos.
 - **Motivo:** los remanentes de una división exacta pueden producir cuotas no divisibles por $500 y deben poder saldarse sin perder ni inventar dinero.
@@ -92,7 +92,7 @@ Registrar aquí decisiones que tengan alternativas relevantes o consecuencias fu
 
 ## ADR-012 — Aplicación agregada de movimientos históricos
 
-- **Estado:** aceptada.
+- **Estado:** reemplazada por ADR-026; se conserva como registro histórico del prototipo de dominio.
 - **Fecha:** 2026-07-17.
 - **Decisión:** los movimientos históricos activos se aplican algebraicamente mediante totales enviados y recibidos, con independencia del orden. Las advertencias se derivan del resultado agregado. Un reemplazo se valida excluyendo exactamente el movimiento anterior.
 - **Motivo:** conservar historia auditable y evitar que el orden accidental cambie saldos o advertencias.
@@ -200,3 +200,11 @@ Registrar aquí decisiones que tengan alternativas relevantes o consecuencias fu
 - **Decisión:** `Hora de pagar` deriva balances y transferencias desde gastos sin persistirlos. La primera búsqueda con más de 15 saldos no nulos se ejecuta en un Worker con presupuesto determinista de 250.000 estados; si se agota no hay aproximación y la persona puede continuar o cancelar explícitamente. Durante ese estado se congelan gastos, membresías e identidades económicas.
 - **Motivo:** proteger la consistencia del resultado, evitar bloquear el hilo principal y conservar una solución gratuita y proporcional para grupos pequeños.
 - **Consecuencia:** ADMIN y COADMIN deben reabrir antes de cambiar datos económicos; el estado persistido sigue siendo la fuente de verdad y el refetch se limita a consultas del evento al recuperar foco.
+
+## ADR-026 — Retiro del registro de transferencias y simplificación de estados
+
+- **Estado:** aceptada; reemplaza ADR-004, ADR-006 y ADR-012, y reemplaza parcialmente ADR-007, ADR-008 y ADR-011 en los aspectos indicados por sus estados.
+- **Fecha:** 2026-07-20.
+- **Decisión:** la aplicación calcula balances y recomienda transferencias exclusivamente desde los gastos, pero no registra pagos, cobros ni confirmaciones totales o parciales. Los estados vigentes son `Cargando gastos`, `Hora de pagar` y `Archivado`. Etapa 7 implementará archivado desde los dos estados operativos, restauración exacta al estado anterior, solo lectura y auditoría. Etapa 8 realizará QA y producción directamente como `1.0.0` cuando ambas estén autorizadas.
+- **Motivo:** mantener el MVP centrado en dividir gastos y reducir transferencias sin convertirlo en un libro de seguimiento posterior. Esto reduce complejidad de producto, permisos, validaciones, persistencia y estados sin afectar el cálculo original ni el optimizador ya usados.
+- **Consecuencia:** se retiran los contratos activos y tests del prototipo aislado `apply-movements`/`calculate-settlement`; nunca estuvieron conectados a frontend ni persistencia y no existe `settlement_movements` en la arquitectura vigente. Las decisiones y registros anteriores no se borran porque describen fielmente el alcance y código de esas versiones, pero dejan de definir comportamiento actual. La versión permanece en `0.6.0` durante la construcción de Etapa 7.

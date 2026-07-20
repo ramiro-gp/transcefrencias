@@ -92,10 +92,7 @@ export function SettlementView({ expenses, participants, userId }: Props) {
             ))}
           </ul>
         )}
-        <p>
-          Son sugerencias. Los movimientos informados se incorporarán en una etapa
-          posterior.
-        </p>
+        <p>Son sugerencias. Las transferencias se coordinan fuera de la aplicación.</p>
       </section>
     </>
   )

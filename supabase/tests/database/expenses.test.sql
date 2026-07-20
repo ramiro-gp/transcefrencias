@@ -44,20 +44,28 @@ select is((select action from public.audit_log where expense_id = (select id fro
 select throws_ok($$ select public.delete_expense((select id from member_expense), 3) $$, '22023', 'Expense not found.', 'deleted expense cannot be deleted again');
 reset role;
 
-alter table public.events drop constraint events_status_valid;
-update public.events set status = 'paying';
 set local request.jwt.claim.sub = '30000000-0000-0000-0000-000000000001';
 set local role authenticated;
+select public.archive_event(
+  (select (result ->> 'event_id')::uuid from expense_event),
+  (select revision from public.events where id = (select (result ->> 'event_id')::uuid from expense_event))
+);
 select throws_ok(
   $$ select public.create_expense((select (result ->> 'event_id')::uuid from expense_event), 'Fuera de estado', 'food', 1750, array[(select id from public.participants limit 1)], array[1750::bigint], array[(select id from public.participants limit 1)]) $$,
-  '22023', 'Expenses can only be changed while loading expenses.', 'RPC rejects expense mutation outside loading state'
+  '22023', 'Archived events are read-only.', 'RPC rejects expense mutation for archived events'
 );
 reset role;
 select throws_ok(
   $$ insert into public.expenses(event_id, concept, category, amount, created_by) values ((select (result ->> 'event_id')::uuid from expense_event), 'Directo', 'food', 1750, '30000000-0000-0000-0000-000000000001') $$,
-  '22023', 'Expenses can only be changed while loading expenses.', 'trigger rejects privileged mutation outside loading state'
+  '22023', 'Archived events are read-only.', 'trigger rejects privileged mutation for archived events'
 );
-update public.events set status='loading_expenses';
+set local request.jwt.claim.sub = '30000000-0000-0000-0000-000000000001';
+set local role authenticated;
+select public.restore_event(
+  (select (result ->> 'event_id')::uuid from expense_event),
+  (select revision from public.events where id = (select (result ->> 'event_id')::uuid from expense_event))
+);
+reset role;
 select throws_ok(
   $$ insert into public.expenses(event_id, concept, category, amount, created_by) values ((select (result ->> 'event_id')::uuid from expense_event), 'Sin aportes', 'food', 1750, '30000000-0000-0000-0000-000000000001'); set constraints all immediate $$,
   '23514', 'Expense payer amounts must exactly equal the expense total.', 'deferred constraint rejects an expense without matching payer totals'
